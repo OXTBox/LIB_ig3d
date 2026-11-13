@@ -1,0 +1,13 @@
+igame3d was Lua 5.1 and we are going to use the Data folder structure and its contents of as to TODO list job processing framework f 
+To have equal  functionality in VibeCode3D, xt3d, and xtalk_py to simulate what was done in lua but in livecode and raylib like , 2027 it's  2007.
+ 
+ a list of game engine required categories to use as a plan of action and/or TODO list  and functions so libraries can be build and reused moving forward.
+ 
+While igame3d is translated do
+  rebuild the whole Data folder structure in projects/xt3D and projects/Vibecode3D, etc, then we can distribute but not require scripts and assest for the LIB_* in sttructure human readible easy to type schema
+
+
+ NOTE: We don't need to prioritize restablishing functionality of  screen human and mouse driven  mesh editing,
+The goal was always procedural generation with scripting and super simplified computer fun with the secondary goal of 'having all the tools you need in one place for FREE' 
+ 
+
