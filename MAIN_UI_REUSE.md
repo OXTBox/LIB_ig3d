@@ -69,5 +69,11 @@ the owner's LIB_UNICODE note: tool icons in Unicode). The map, `kTools` in that 
 | WindowPickPop | ❐ U+2750 | windows.png | no |
 | bones | ⟟ U+27DF | bone.png | no |
 
-Next: the menus (File, Edit, Library, Mesh, Window, Dev, Help) from the menu buttons' text;
-then the vertex/path tools on Vibecode3D meshes; then the substacks (browser, inspector, console).
+**Done since:** the menu bar (File Edit Library Mesh Window Dev Help, items and submenus as they
+were; File > Level > New/Reset/Clear, Edit > Undo / boom / boom all, Mesh > Focus Mesh wired), and
+**Library = filesLibrary remade**: Models / Levels / Emitters / Scripts list the 2008 Data files;
+a `.wtf` model loads as a Vibecode3D wireframe from its `#Vertices` and `#Edges` (755 models).
+
+**Next:** open Levels / Emitters / Scripts items (a level loads its objects; an emitter shows its
+settings); Window > Inspector (the Inspector substack: properties of the selected object);
+Window > Console (an xTalk command line, rule 19); the vertex tools on loaded meshes.
