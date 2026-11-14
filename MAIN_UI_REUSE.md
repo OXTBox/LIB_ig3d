@@ -44,3 +44,30 @@ scripts read before they're final. Images (108 icons on the main card) not opene
 1. Read the scripts of the *(look)* rows and the **keep** rows (LIB_SCRIPTBLOCKS can cut them into blocks).
 2. Compare with the 2007 `.rev` (17 stacks): what changed between 2007 and 2026.
 3. Turn each **keep** into a TODO in the LIB it goes to.
+
+## Started: the toolbar, remade (2026-11-13, LIB_GAMES branch `ig3d-ui-remake`)
+
+`Vibecode3D_Play_Ig3dEditor.livecodescript`: the 2026 main card's 26 icon tools in their old order,
+each PNG icon replaced by a Unicode symbol chosen from the icon's file name (images never opened;
+the owner's LIB_UNICODE note: tool icons in Unicode). The map, `kTools` in that card:
+
+| tool | symbol | old icon | wired? |
+|---|---|---|---|
+| level | ⚙ U+2699 | console.png | no |
+| snapshot | ◙ U+25D9 | snapshot.png | no |
+| colors | ◐ U+25D0 | colorball16x16.png | yes (recolours the last object) |
+| light | ☀ U+2600 | lights.png | marker only |
+| objects | ☺ U+263A | 32x32zombie3.png | no |
+| particles | ✳ U+2733 | particlesicon24x24.png | no |
+| camera | ◎ U+25CE | meshView.png | yes (reset) |
+| GLController | ✥ U+2725 | repositiontoolnew2.png | yes (orbit) |
+| pathselect, path | ⇢ ✎ | pathSelectIcon / pathToolIcon | no |
+| select_mesh, vertex, line, disconnect, split | ▦ • ╱ ✂ ⋔ | tool6 / tool2 / tool3 / tool5 / tool4 | no |
+| quad, cube, dropMesh, Terrain, cylinder, cone, sphere | ▭ ▣ ⤓ ▲ ⌭ △ ● | their own icons | yes |
+| Play_Game | ▶ U+25B6 | playGameButton.png | yes (orbit) |
+| sounds | ♪ U+266A | soundicon22x22.png | no |
+| WindowPickPop | ❐ U+2750 | windows.png | no |
+| bones | ⟟ U+27DF | bone.png | no |
+
+Next: the menus (File, Edit, Library, Mesh, Window, Dev, Help) from the menu buttons' text;
+then the vertex/path tools on Vibecode3D meshes; then the substacks (browser, inspector, console).
