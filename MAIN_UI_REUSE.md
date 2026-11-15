@@ -109,8 +109,8 @@ It is a plain-text keyframe list per bone, the same idea as the Sequencer's `.se
 switches mouse-look), `BackgroundColorEffectTEST`, the duplicated `markertemplatebackup`.
 
 **TODOs this gives (step 3), for the owner to accept into LIB_SYSTEM/TODO.md:**
-- Vibecode3D editor: Window > Inspector as one card per object kind (material, bones, colours).
-- A `#Animations` reader for `.wtf` models → Sequencer clips (with A-23).
-- Editor command "replace with model..." (replacemodels).
-- Library preview: drag a model from the preview into the scene.
-- A game-design-document outline from GameOverViewData's tabs (LIB_HOWTO / PROMPT & GLAZE).
+- Vibecode3D editor: Window > Inspector as one card per object kind (material, bones, colours). -- This sounds reasonable, MOST of the MESH Editing level features of iGame3d won't be relevant in Vibecode3D, use only what's needed to produce the games and game assets proceduraly, for now. We'll respecfully honor Blender's deserved infinitely expandable King of the 3D apps status. Go ahead and set up the cards and their UIs, with placeholder scripts that we'll fill in when we are challenged with a need for the functionality. Obviously a BVH/bones animation previewer, key frame clipper (ie, stop the animation before the ubiquitous weird glitch part), and apply them to game's Animation List to be inherited by models, instead of embeddded directly in them.
+- A `#Animations` reader for `.wtf` models → Sequencer clips (with A-23). If this is passable to our glb/bvh then go forward, else put .wtf model activity on a backburner. UNLESS we want to start saving our procedurally generated meshes? Nah, stick with glb/glft and USD...I was trying to invent USD in 2005, I was completey in over my head.
+- Editor command "replace with model..." (replacemodels). -- Yes!, a little UI to replace the placeholder geometry in TemplateGames and save the choices to an alternate "Skin" would be awesome. 
+- Library preview: drag a model from the preview into the scene. -- You know how to do it? You put a preview of the model/whatever into a temp stack,  stack follows mouse over the viewport, works across multiple stacks, and maybe even into other apps. Let's get that in place.
+- A game-design-document outline from GameOverViewData's tabs (LIB_HOWTO / PROMPT & GLAZE). -- Not sure what this is, but I sounds good.
