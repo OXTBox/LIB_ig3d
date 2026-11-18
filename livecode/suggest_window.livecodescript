@@ -54,6 +54,8 @@ on SuggestWindow.Build pFolder
       create field "words"
       create field "meaning"
       create button "About"
+      -- first time only: the middle of the screen (a new stack sized here can land half off it)
+      set the loc of me to the screenLoc
    end if
    set the rect of field "typed" to 12,12,tW - 96,40
    set the lockText of field "typed" to false
