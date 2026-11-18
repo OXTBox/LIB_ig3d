@@ -52,7 +52,7 @@ has to read `gCameraYaw` / `gCameraPitch`.
 | **A. Step 2** | The 22 new names that have an old one in use are thin aliases: three lines each, passing straight through to the old handler. The engine's own code is not touched, and a game that has not moved loses nothing. |
 | **B. Games move** | Both names work. The checker counts old names as a new kind of debt, `old name`, with the new name beside it; it does not fail on them. |
 | **C. The checker says 0 old names** | The switch: the engine source takes the new names, and the old names become the aliases. From here `--strict` fails on an old name in our own games. |
-| **D. After** | The old aliases stay through the first public release and go only on the owner's word. They cost 22 small handlers. Public material teaches only the new names from stage A. |
+| **D. Before the first public release** | The old aliases are deleted (owner, 18 Nov: "we won't break anything for anyone but ourselves. I'd rather the language be clear and certain when it's released"). The released language has one name for each thing; an old name is then an ordinary error, and the checker calls it `unknown`. Public material teaches only the new names from stage A. |
 
 Where they live: **one table, three generated files.** The table (old, new) goes into
 `ENGINE_CONTRACT.md` as one more marked table (`<!-- contract:renames -->`). A new tool,
@@ -155,6 +155,6 @@ Not in step 2: moving any game; the engine source; LIB_DEV, LIB_MENU, LIB_GUI, L
 |---|---|---|
 | 1 | The three Scene moves (`Scene.SetBob`, `Scene.SetBounds`, `Scene.Has` to `Entity.`): yes? | yes: they act on one object |
 | 2 | Camera calls: a `Camera.` group? | **answered, 18 Nov: yes, its own group** (section 1). Still yours to confirm: `Camera.SetPosition` takes the camera's real place (signs turned round from `Engine.SetCam`) |
-| 3 | `Get` in the names (`Entity.GetPosition`), or the short form (`Entity.Position`)? | `Get`: it sorts beside its `Set` in the list |
-| 4 | Old names: kept through the first public release, removed only on your word? | yes |
-| 5 | Which face after the small window: the in-game console (2) or the script editor (4)? | the in-game console |
+| 3 | `Get` in the names (`Entity.GetPosition`), or the short form (`Entity.Position`)? | **answered, 18 Nov: Get and Set** |
+| 4 | Old names: kept through the first public release? | **answered, 18 Nov: no.** They are for us only, while the games move, and are gone before release (section 2, stage D) |
+| 5 | Where should the list show up next, after the small test window: inside a running game (the command line at the lower left of the game window), or in the script editor while you write a game's code? | inside a running game |
