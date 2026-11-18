@@ -171,7 +171,7 @@ Not in step 2: moving any game; the engine source; LIB_DEV, LIB_MENU, LIB_GUI, L
 
 | # | Question | Default taken |
 |---|---|---|
-| 1 | The three Scene moves (`Scene.SetBob`, `Scene.SetBounds`, `Scene.Has` to `Entity.`): yes? | yes: they act on one object |
+| 1 | The three Scene moves (`Scene.SetBob`, `Scene.SetBounds`, `Scene.Has` to `Entity.`): yes? | **answered, 18 Nov: yes.** "We'll go with everything being an entity": what acts on one object goes under `Entity.`, for new calls too |
 | 2 | Camera calls: a `Camera.` group? | **answered, 18 Nov: yes, its own group** (section 1). Still yours to confirm: `Camera.SetPosition` takes the camera's real place (signs turned round from `Engine.SetCam`) |
 | 3 | `Get` in the names (`Entity.GetPosition`), or the short form (`Entity.Position`)? | **answered, 18 Nov: Get and Set** |
 | 4 | Old names: kept through the first public release? | **answered, 18 Nov: no.** They are for us only, while the games move, and are gone before release (section 2, stage D) |
