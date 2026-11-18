@@ -1,6 +1,7 @@
 # The engine contract
 
 Monday, November 16, 2026. Draft 1, by Fable 5.2, for the owner to correct.
+Tuesday, November 17, 2026: the owner answered the five questions (section 15); the tables follow his answers.
 Branch `engine-contract` (LIB_ig3d and LIB_GAMES). Checker: `tools/contract_check.py`.
 
 One game script should run on all four editions:
@@ -107,7 +108,8 @@ passes it to these calls.
 | Call | What it does, units, what it gives back | XT | xRay | Box2D editions |
 |---|---|---|---|---|
 | `Engine.ResetCamera` | a plain camera: at 0,0,0, looking along +Z, no turn, no zoom. Call it in `Game.OnStart`. | yes | yes | same |
-| `Engine.SetCam pX, pY, pZ` | moves the WORLD by x,y,z (units), so a camera standing at cx,cy,cz is `Engine.SetCam -cx, -cy, -cz`. An empty number leaves that axis alone. Turning is the shared values `gCameraYaw`, `gCameraPitch` (section 9). | yes | yes | same |
+| `Engine.SetCam pX, pY, pZ` | moves the WORLD by x,y,z (units), so a camera standing at cx,cy,cz is `Engine.SetCam -cx, -cy, -cz`. An empty number leaves that axis alone. Turning: `Engine.SetLook` below (the shared values `gCameraYaw`, `gCameraPitch` still work until every game uses it). | yes | yes | same |
+| `Engine.SetLook pYaw, pPitch, pRoll` | turns the camera (radians): yaw left-right (0 looks along +Z, positive turns right), pitch up-down (positive looks up), roll side to side (positive tips the picture clockwise). An empty number leaves that turn alone. Owner's answer to question 2, 17 Nov. | add | add | add |
 | `Engine.Info(pKey)` | `"stepMS"`: 33. `"simTick"`: steps since the engine started. `"projection"`: `k,offX,offY`: a point x,y,z in front of an unturned camera shows at screen `x*k/z + offX`, `y*k/z + offY`. `"fps"`, `"playing"`, `"paused"`. Any other key: empty. | yes | yes | same |
 | `Engine.Info("edition")` | `XT`, `xRay`, `Box2DXT` or `xRayBox` (the same call as above with a new key; XT answers empty today). | add | add | add |
 | `Engine.Has(pFeature)` | true when this edition has an optional part: `"physics"`, `"sound"`, `"models"`. A game asks before using an optional part and plays on without it. | add | add | add |
@@ -166,7 +168,7 @@ Globals a game may declare. "read" means the engine sets it and the game only lo
 | `gViewBottom` | read: its bottom edge. | yes | yes | same |
 | `CenterX` | read: the view's centre, x. | yes | yes | same |
 | `CenterY` | read: the view's centre, y. | yes | yes | same |
-| `gCameraYaw` | read and write: the camera's turn left-right (radians; 0 looks along +Z, positive turns right). | yes | yes | same |
+| `gCameraYaw` | read and write: the camera's turn left-right (radians; 0 looks along +Z, positive turns right). Being replaced by `Engine.SetLook` (section 5). | yes | yes | same |
 | `gCameraPitch` | read and write: its tilt (radians; positive looks up). | yes | yes | same |
 | `bPaused` | read: true while paused (Escape, the menu, the window in the background). | yes | yes | same |
 | `bPlaying` | read: true while the game runs. | yes | yes | same |
@@ -325,8 +327,8 @@ Genetic Anomaly): 56 owe something, 53 different debts. No game uses a planned c
 | 5 | Reads the mouse off the card or the whole screen, or locks the cursor | Antack, AntackFresh, Canyon, Hunter, LightTrailArena, ProbeVsCone, SquadBuggy, VectorToss, uDead, the editor | `Engine.Mouse`. Mouse-look (Hunter, uDead lock the cursor) has no contract form yet. |
 | 6 | Builds objects the old way (`Scene.AddObject`, `Scene.Register`, `Scene.ColorGraphic`), stops the loop itself (`game.loop.stop`), casts its own ray (`RayCastScene`) | Hunter, Canyon | `Entity.Spawn`, `Game.Exit`, `Weapon.FireAt` |
 | 7 | Looks into the mesh store `gMeshCache` | Thrmnlra | `Mesh.Has` |
-| 8 | Makes its own buttons, fields or windows; measures the window; dialogs; waits; own timers; starts programs; calls the player's `Player.Quit` | the editor and its tools (most), Thrmnlra, the Sequencer, Genetic Anomaly, Hunter (one timer) | a decision first (question 3); for an editor this may simply be allowed |
-| 9 | The old demo cards: 13 engine internals and 19 engine globals each | demo, Simple_Test2 (the same script twice) | retire them (question 4) |
+| 8 | Makes its own buttons, fields or windows; measures the window; dialogs; waits; own timers; starts programs; calls the player's `Player.Quit` | the editor and its tools (most), Thrmnlra, the Sequencer, Genetic Anomaly, Hunter (one timer) | **allowed** (owner, 17 Nov, question 3): xRay always shows inside an xTalk window, so a game may make its own buttons and fields |
+| 9 | The old demo cards: 13 engine internals and 19 engine globals each | demo, Simple_Test2 (the same script twice) | **retired** (owner, 17 Nov, question 4): renamed `original_demo` and `Original_Simple_Test2`, taken out of the game list and the libraries |
 | 10 | A leftover line: declares `gSceneObjects` / `gObjectTransforms` and never uses them | 44 and 41 scripts | delete the line (harmless today) |
 
 The whole list, as the checker printed it (name, then game:line numbers):
@@ -479,19 +481,32 @@ stops where the real engine would), plus two debts kept alive for the games that
 A stand-in remembers what a game sets (positions, rotations, speeds, which objects exist, HUD
 text) and does nothing else: nothing moves, nothing collides, nothing is drawn.
 
-## 15. Open questions for the owner
+## 15. The owner's answers (17 Nov 2026)
 
-1. **The object table.** XT keeps every object in the global `gObjectTransforms` and the draw
-   list in `gSceneObjects`. This draft puts both outside the contract and adds five small calls
-   (`Entity.Set`, `Entity.Get`, `Entity.SetMesh`, `Scene.Objects`, `Scene.Has`) to replace what
-   games do with them. The other choice is to make the table itself the contract; then xRay and
-   the Box2D editions must keep an identical table forever. Default taken: calls, not the table.
-2. **Camera turn** stays two shared values (`gCameraYaw`, `gCameraPitch`) because 17 games write
-   them and no call exists. Say if you would rather have `Engine.SetLook pYaw, pPitch`.
-3. **Games that make their own buttons and fields** (the editor, Genetic Anomaly, Thrmnlra and
-   others): a debt as written, since raylib's own window has no cards. If xRay always shows
-   inside an xTalk window (it can), this can become allowed. Default taken: debt.
-4. **The old demo cards** (`demo`, `Simple_Test2`) reach deepest into the engine (they were its
-   test bed). Retire them from the game list rather than fix them?
-5. **Names.** Object calls are `SetObjectPosition` style and the rest `Group.Verb` style. Left
-   as they are (330 uses); a rename day could add `Entity.SetPosition` beside the old names.
+The five questions of draft 1, each with the owner's answer and what it means for the work.
+His own words are kept in `LIB_LLMOUT/Read/LIB_ig3d/ENGINE_CONTRACT_ANSWERS.md`.
+
+1. **The object table: calls, not the table.** Draft 1 asked whether games keep reaching into
+   XT's own lists of objects (`gObjectTransforms`, `gSceneObjects`), or ask the engine through
+   small calls (`Entity.Set`, `Entity.Get`, `Entity.SetMesh`, `Scene.Objects`, `Scene.Has`).
+   In plain words: with calls, each edition may keep its objects however it likes inside, and a
+   game only says "set this object's hp to 3". **Owner:** "A basic game such as Pong should be
+   editable without rewriting all of Pong" (like mods). Calls are that road: a mod or an editor
+   changes an object through the same few calls on every edition, and nothing breaks when an
+   edition keeps its objects differently. **Decision: calls.**
+2. **Camera turn: a call, with roll.** **Owner:** yes, and add roll. **Decision:**
+   `Engine.SetLook pYaw, pPitch, pRoll` (section 5); the two shared values stay until the 17
+   games that write them use the call.
+3. **Games that make their own buttons and fields: allowed.** **Owner:** yes: getting raylib
+   into xTalk is a big deal, and the games are the template for future users; a pure raylib (and
+   Blender) "xTalk game engine IDE" is a wish for later, after the foundations. **Decision:**
+   xRay always shows inside an xTalk window, so debt row 8 is allowed, not a debt.
+4. **The old demo cards: retired.** **Owner:** retire `demo` and `Simple_Test2` as
+   `original_demo` and `Original_Simple_Test2`, out of the libraries and the game list ("we've got
+   50+ demos now"); **put Simple_Cube in the game list** for tutorials. **Decision:** Simple_Cube
+   is the spinning-cube test `Simple_Test1` (one cube over a floor grid, 66 lines), renamed.
+5. **Names: rename day.** **Owner:** we definitely should rename, and want Blender-style
+   suggestions: type `Entity.` and a list of everything under Entity appears, so nobody has to
+   guess the next word among thousands. **Decision:** a Rename Day goes on the to-do list
+   (`Entity.SetPosition` etc. beside the old names, then the games move over), with the
+   `Group.` suggestion list as its companion.
