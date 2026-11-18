@@ -2,14 +2,14 @@
 # kind, group, name, form, gives (yes: it gives a value back), xt (yes / planned), old name,
 # first parameter, meaning. Tabs between. Read by LIB_ig3d/livecode/lib_suggest.livecodescript.
 call	Scene	Scene.ClearAll	Scene.ClearAll	no	yes			removes every object. Call it first in Game.OnStart.
-call	Scene	Scene.Objects	Scene.Objects(pMesh)	yes	planned		pMesh	the ids of the living objects, one a line; with a mesh name, only the objects drawn with it.
+call	Scene	Scene.Objects	Scene.Objects(pMesh)	yes	yes		pMesh	the ids of the living objects, one a line; with a mesh name, only the objects drawn with it.
 call	Mesh	Mesh.New	Mesh.New()	yes	yes			an empty mesh.
 call	Mesh	Mesh.AddVertex	Mesh.AddVertex tMesh, pX, pY, pZ	no	yes		tMesh	adds a point (units, mesh's own centre = 0,0,0). The point's number is in the result (first point is 1).
 call	Mesh	Mesh.AddFace	Mesh.AddFace tMesh, pIndices	no	yes		tMesh	adds a polygon: point numbers with spaces, in order round it ("1 2 3 4"). Faces can be hit by the laser.
 call	Mesh	Mesh.AddLine	Mesh.AddLine tMesh, pA, pB	no	yes		tMesh	adds a loose line between two points (drawn, never hit).
 call	Mesh	Mesh.Define	Mesh.Define pName, tMesh	no	yes		pName	names the finished mesh. Defining a name again replaces it. A skin (the player's business) may swap in a model of the same size.
 call	Mesh	Mesh.Get	Mesh.Get(pName)	yes	yes		pName	the named mesh, finished. Its ["radius"] (units from its centre to its farthest point) and ["count"] may be read.
-call	Mesh	Mesh.Has	Mesh.Has(pName)	yes	planned		pName	true when a mesh of that name is defined.
+call	Mesh	Mesh.Has	Mesh.Has(pName)	yes	yes		pName	true when a mesh of that name is defined.
 call	Mesh	Mesh.Transform	Mesh.Transform(tMesh, pRX, pRY, pRZ, pTX, pTY, pTZ, pScale)	yes	yes		tMesh	a copy turned (radians), scaled (empty = 1), then moved (units).
 call	Mesh	Mesh.Merge	Mesh.Merge(tA, tB)	yes	yes		tA	mesh A with mesh B added.
 call	Mesh	Mesh.Box	Mesh.Box(pW, pH, pD)	yes	yes	MeshBox	pW	a box centred on 0,0,0: width (x), height (y), depth (z) in units.
@@ -26,9 +26,9 @@ call	Entity	Entity.Count	Entity.Count(pMesh)	yes	yes		pMesh	how many living obje
 call	Entity	Entity.Exists	Entity.Exists(pId)	yes	yes	Scene.Has	pId	true while the object exists (from Entity.Spawn until Entity.Kill, an explosion or a kill).
 call	Entity	Entity.SetBob	Entity.SetBob pId, pAmp, pRoll, pSpeed	no	yes	Scene.SetBob	pId	the object floats: up and down pAmp units around where it is now, rocking pRoll radians, pSpeed radians a step.
 call	Entity	Entity.SetBounds	Entity.SetBounds pId, pBounds	no	yes	Scene.SetBounds	pId	keeps a drifting object inside xmin,xmax,zmin,zmax (units): it bounces off the edges.
-call	Entity	Entity.SetMesh	Entity.SetMesh pId, pMesh	no	planned		pId	draws the object with another mesh from now on (a hill that shrinks, a door that opens).
-call	Entity	Entity.Set	Entity.Set pId, pProp, pValue	no	planned		pId	sets a value the engine understands: hp (hits it can take from the laser or a default collision), ttl (steps until the engine removes it), radius (units, for collisions). A game's own facts about an object belong in the game's own variables.
-call	Entity	Entity.Get	Entity.Get(pId, pProp)	yes	planned		pId	reads one back (hp, ttl, radius, mesh, group); empty when the object is gone.
+call	Entity	Entity.SetMesh	Entity.SetMesh pId, pMesh	no	yes		pId	draws the object with another mesh from now on (a hill that shrinks, a door that opens).
+call	Entity	Entity.Set	Entity.Set pId, pProp, pValue	no	yes		pId	sets a value the engine understands: hp (hits it can take from the laser or a default collision), ttl (steps until the engine removes it), radius (units, for collisions). A game's own facts about an object belong in the game's own variables.
+call	Entity	Entity.Get	Entity.Get(pId, pProp)	yes	yes		pId	reads one back (hp, ttl, radius, mesh, group); empty when the object is gone.
 call	Entity	Entity.SetPosition	Entity.SetPosition pId, pX, pY, pZ	no	yes	SetObjectPosition	pId	puts it there (units). An empty number is 0.
 call	Entity	Entity.GetPosition	Entity.GetPosition(pId, pAxis)	yes	yes	GetObjectPosition	pId	x,y,z; with pAxis "x", "y" or "z", that one number.
 call	Entity	Entity.SetRotation	Entity.SetRotation pId, pRX, pRY, pRZ	no	yes	SetObjectRotation	pId	turns it (radians about x, y, z).
@@ -39,16 +39,16 @@ call	Entity	Entity.SetVelocity	Entity.SetVelocity pId, pVX, pVY, pVZ	no	yes	SetO
 call	Entity	Entity.GetVelocity	Entity.GetVelocity(pId)	yes	yes	GetObjectVelocity	pId	vx,vy,vz.
 call	Camera	Camera.Reset	Camera.Reset	no	yes	Engine.ResetCamera		a plain camera: at 0,0,0, looking along +Z, no turn, no zoom. Call it in Game.OnStart.
 call	Camera	Camera.SetPosition	Camera.SetPosition pX, pY, pZ	no	yes	Engine.SetCam	pX	puts the camera at x,y,z (units). An empty number leaves that axis alone. (The old Engine.SetCam moved the WORLD, so it took the same numbers with their signs turned round: section 16.) Turning: Camera.SetLook below (the shared values gCameraYaw, gCameraPitch still work until every game uses it).
-call	Camera	Camera.SetLook	Camera.SetLook pYaw, pPitch, pRoll	no	planned		pYaw	turns the camera (radians): yaw left-right (0 looks along +Z, positive turns right), pitch up-down (positive looks up), roll side to side (positive tips the picture clockwise). An empty number leaves that turn alone. Owner's answer to question 2, 17 Nov.
+call	Camera	Camera.SetLook	Camera.SetLook pYaw, pPitch, pRoll	no	yes		pYaw	turns the camera (radians): yaw left-right (0 looks along +Z, positive turns right), pitch up-down (positive looks up), roll side to side (positive tips the picture clockwise). An empty number leaves that turn alone. Owner's answer to question 2, 17 Nov.
 call	Camera	Camera.ScreenToFloor	Camera.ScreenToFloor(pX, pY, pFloorY)	yes	yes	Engine.ScreenToFloor	pX	the place on the level floor y = pFloorY (units) under a screen point: x z (a space between), or empty when that point looks at the sky.
-call	Camera	Camera.WorldToScreen	Camera.WorldToScreen(pX, pY, pZ)	yes	planned		pX	where a world point shows on the screen: x,y in pixels, or empty when it is behind the camera.
+call	Camera	Camera.WorldToScreen	Camera.WorldToScreen(pX, pY, pZ)	yes	yes		pX	where a world point shows on the screen: x,y in pixels, or empty when it is behind the camera.
 call	Engine	Engine.Info	Engine.Info(pKey)	yes	yes		pKey	"stepMS": 33. "simTick": steps since the engine started. "projection": k,offX,offY: a point x,y,z in front of an unturned camera shows at screen x*k/z + offX, y*k/z + offY. "fps", "playing", "paused". Any other key: empty.
-call	Engine	Engine.Has	Engine.Has(pFeature)	yes	planned		pFeature	true when this edition has an optional part: "physics", "sound", "models". A game asks before using an optional part and plays on without it.
-call	Engine	Engine.Mouse	Engine.Mouse()	yes	planned			x,y,down: the mouse in the view's pixels, and true while its button is held. Empty when there is no mouse (a test, gNoMouse).
+call	Engine	Engine.Has	Engine.Has(pFeature)	yes	yes		pFeature	true when this edition has an optional part: "physics", "sound", "models". A game asks before using an optional part and plays on without it.
+call	Engine	Engine.Mouse	Engine.Mouse()	yes	yes			x,y,down: the mouse in the view's pixels, and true while its button is held. Empty when there is no mouse (a test, gNoMouse).
 call	View	View.UsePreset	View.UsePreset pName	no	yes		pName	the look: 1983, Arcade, Fast, Vectrex (line colour, glow, far lines fading).
 call	View	View.NextPreset	View.NextPreset()	yes	yes			the name of the look after the current one (pass it to View.UsePreset).
 call	Game	Game.Exit	Game.Exit	no	yes			the game ends itself: the engine sends Game.OnStop and stops stepping. The window stays, the player offers Reset.
-call	Game	Game.FindFile	Game.FindFile(pPath)	yes	planned		pPath	the full path of one of the game's files, or empty. pPath is written from the projects folder (LIB_GAMES/Vibecode3D_Games/Antack/antack_data.txt); the engine looks in the game's own folder first, then the shared folder, then upward (LIB_PUBLIC/install/LAYOUT.md 5.1). Today every game carries its own copy of this (section 12).
+call	Game	Game.FindFile	Game.FindFile(pPath)	yes	yes		pPath	the full path of one of the game's files, or empty. pPath is written from the projects folder (LIB_GAMES/Vibecode3D_Games/Antack/antack_data.txt); the engine looks in the game's own folder first, then the shared folder, then upward (LIB_PUBLIC/install/LAYOUT.md 5.1). Today every game carries its own copy of this (section 12).
 call	HUD	HUD.Set	HUD.Set pId, pText, pX, pY, pSize	no	yes		pId	a line of vector text at screen x,y (its top left, pixels), letters pSize pixels high. Setting an id again replaces it. Letters A-Z 0-9 : - + . ! / ^ ? , ' and space; anything else is a gap. Small letters show as capitals.
 call	HUD	HUD.Remove	HUD.Remove pId	no	yes		pId	removes that line.
 call	HUD	HUD.Clear	HUD.Clear	no	yes			removes every line.

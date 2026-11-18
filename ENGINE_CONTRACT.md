@@ -54,7 +54,7 @@ code, not by running xRay; the Box2D editions do not exist yet.
 | Call | What it does, units, what it gives back | XT | xRay | Box2D editions |
 |---|---|---|---|---|
 | `Scene.ClearAll` | removes every object. Call it first in `Game.OnStart`. | yes | yes | same |
-| `Scene.Objects(pMesh)` | the ids of the living objects, one a line; with a mesh name, only the objects drawn with it. | add | add | add |
+| `Scene.Objects(pMesh)` | the ids of the living objects, one a line; with a mesh name, only the objects drawn with it. | yes | yes | same |
 
 ## 3. Meshes
 
@@ -70,7 +70,7 @@ passes it to these calls.
 | `Mesh.AddLine tMesh, pA, pB` | adds a loose line between two points (drawn, never hit). | yes | yes | same |
 | `Mesh.Define pName, tMesh` | names the finished mesh. Defining a name again replaces it. A skin (the player's business) may swap in a model of the same size. | yes | host | same |
 | `Mesh.Get(pName)` | the named mesh, finished. Its `["radius"]` (units from its centre to its farthest point) and `["count"]` may be read. | yes | yes | same |
-| `Mesh.Has(pName)` | true when a mesh of that name is defined. | add | add | add |
+| `Mesh.Has(pName)` | true when a mesh of that name is defined. | yes | yes | same |
 | `Mesh.Transform(tMesh, pRX, pRY, pRZ, pTX, pTY, pTZ, pScale)` | a copy turned (radians), scaled (empty = 1), then moved (units). | yes | yes | same |
 | `Mesh.Merge(tA, tB)` | mesh A with mesh B added. | yes | yes | same |
 | `Mesh.Box(pW, pH, pD)` | a box centred on 0,0,0: width (x), height (y), depth (z) in units. | yes | yes | same |
@@ -92,9 +92,9 @@ passes it to these calls.
 | `Entity.Exists(pId)` | true while the object exists (from `Entity.Spawn` until `Entity.Kill`, an explosion or a kill). | yes | yes | same |
 | `Entity.SetBob pId, pAmp, pRoll, pSpeed` | the object floats: up and down pAmp units around where it is now, rocking pRoll radians, pSpeed radians a step. | yes | yes | same |
 | `Entity.SetBounds pId, pBounds` | keeps a drifting object inside `xmin,xmax,zmin,zmax` (units): it bounces off the edges. | yes | yes | same |
-| `Entity.SetMesh pId, pMesh` | draws the object with another mesh from now on (a hill that shrinks, a door that opens). | add | add | add |
-| `Entity.Set pId, pProp, pValue` | sets a value the engine understands: `hp` (hits it can take from the laser or a default collision), `ttl` (steps until the engine removes it), `radius` (units, for collisions). A game's own facts about an object belong in the game's own variables. | add | add | add |
-| `Entity.Get(pId, pProp)` | reads one back (`hp`, `ttl`, `radius`, `mesh`, `group`); empty when the object is gone. | add | add | add |
+| `Entity.SetMesh pId, pMesh` | draws the object with another mesh from now on (a hill that shrinks, a door that opens). | yes | yes | same |
+| `Entity.Set pId, pProp, pValue` | sets a value the engine understands: `hp` (hits it can take from the laser or a default collision), `ttl` (steps until the engine removes it), `radius` (units, for collisions). A game's own facts about an object belong in the game's own variables. | yes | yes | same |
+| `Entity.Get(pId, pProp)` | reads one back (`hp`, `ttl`, `radius`, `mesh`, `group`); empty when the object is gone. | yes | yes | same |
 | `Entity.SetPosition pId, pX, pY, pZ` | puts it there (units). An empty number is 0. | yes | yes | same; moves the body |
 | `Entity.GetPosition(pId, pAxis)` | `x,y,z`; with pAxis `"x"`, `"y"` or `"z"`, that one number. | yes | yes | same; the body's place |
 | `Entity.SetRotation pId, pRX, pRY, pRZ` | turns it (radians about x, y, z). | yes | yes | same |
@@ -110,22 +110,22 @@ passes it to these calls.
 |---|---|---|---|---|
 | `Camera.Reset` | a plain camera: at 0,0,0, looking along +Z, no turn, no zoom. Call it in `Game.OnStart`. | yes | yes | same |
 | `Camera.SetPosition pX, pY, pZ` | puts the camera at x,y,z (units). An empty number leaves that axis alone. (The old `Engine.SetCam` moved the WORLD, so it took the same numbers with their signs turned round: section 16.) Turning: `Camera.SetLook` below (the shared values `gCameraYaw`, `gCameraPitch` still work until every game uses it). | yes | yes | same |
-| `Camera.SetLook pYaw, pPitch, pRoll` | turns the camera (radians): yaw left-right (0 looks along +Z, positive turns right), pitch up-down (positive looks up), roll side to side (positive tips the picture clockwise). An empty number leaves that turn alone. Owner's answer to question 2, 17 Nov. | add | add | add |
+| `Camera.SetLook pYaw, pPitch, pRoll` | turns the camera (radians): yaw left-right (0 looks along +Z, positive turns right), pitch up-down (positive looks up), roll side to side (positive tips the picture clockwise). An empty number leaves that turn alone. Owner's answer to question 2, 17 Nov. | yes | yes | same |
 | `Camera.ScreenToFloor(pX, pY, pFloorY)` | the place on the level floor y = pFloorY (units) under a screen point: `x z` (a space between), or empty when that point looks at the sky. | yes | yes | same |
-| `Camera.WorldToScreen(pX, pY, pZ)` | where a world point shows on the screen: `x,y` in pixels, or empty when it is behind the camera. | add | add | add |
+| `Camera.WorldToScreen(pX, pY, pZ)` | where a world point shows on the screen: `x,y` in pixels, or empty when it is behind the camera. | yes | yes | same |
 
 ### 5b. The view, and the engine itself
 
 | Call | What it does, units, what it gives back | XT | xRay | Box2D editions |
 |---|---|---|---|---|
 | `Engine.Info(pKey)` | `"stepMS"`: 33. `"simTick"`: steps since the engine started. `"projection"`: `k,offX,offY`: a point x,y,z in front of an unturned camera shows at screen `x*k/z + offX`, `y*k/z + offY`. `"fps"`, `"playing"`, `"paused"`. Any other key: empty. | yes | yes | same |
-| `Engine.Info("edition")` | `XT`, `xRay`, `Box2DXT` or `xRayBox` (the same call as above with a new key; XT answers empty today). | add | add | add |
-| `Engine.Has(pFeature)` | true when this edition has an optional part: `"physics"`, `"sound"`, `"models"`. A game asks before using an optional part and plays on without it. | add | add | add |
-| `Engine.Mouse()` | `x,y,down`: the mouse in the view's pixels, and true while its button is held. Empty when there is no mouse (a test, `gNoMouse`). | add | add | add |
+| `Engine.Info("edition")` | `XT`, `xRay`, `Box2DXT` or `xRayBox` (the same call as above with a new key; empty `gV3DEdition` means XT; the xt3d bench says xRay). | yes | yes | same |
+| `Engine.Has(pFeature)` | true when this edition has an optional part: `"physics"`, `"sound"`, `"models"`. A game asks before using an optional part and plays on without it. | yes | yes | same |
+| `Engine.Mouse()` | `x,y,down`: the mouse in the view's pixels, and true while its button is held. Empty when there is no mouse (a test, `gNoMouse`). | yes | yes | same |
 | `View.UsePreset pName` | the look: `1983`, `Arcade`, `Fast`, `Vectrex` (line colour, glow, far lines fading). | yes | host | same |
 | `View.NextPreset()` | the name of the look after the current one (pass it to `View.UsePreset`). | yes | yes | same |
 | `Game.Exit` | the game ends itself: the engine sends `Game.OnStop` and stops stepping. The window stays, the player offers Reset. | yes | yes | same |
-| `Game.FindFile(pPath)` | the full path of one of the game's files, or empty. pPath is written from the projects folder (`LIB_GAMES/Vibecode3D_Games/Antack/antack_data.txt`); the engine looks in the game's own folder first, then the shared folder, then upward (`LIB_PUBLIC/install/LAYOUT.md` 5.1). Today every game carries its own copy of this (section 12). | add | add | add |
+| `Game.FindFile(pPath)` | the full path of one of the game's files, or empty. pPath is written from the projects folder (`LIB_GAMES/Vibecode3D_Games/Antack/antack_data.txt`); the engine looks in the game's own folder first, then the shared folder, then upward (`LIB_PUBLIC/install/LAYOUT.md` 5.1). Today every game carries its own copy of this (section 12). | yes | yes | same |
 
 ## 6. HUD and text
 
@@ -280,14 +280,18 @@ Box2D edition exists to test against. The rules it must follow when written:
 
 ## 12. What each edition must add
 
-**All four** (planned calls, section 2 to 5): `Game.FindFile`, `Scene.Objects`, `Mesh.Has`,
-`Entity.SetMesh`, `Entity.Set`, `Entity.Get`, `Camera.WorldToScreen`, `Engine.Mouse`,
-`Engine.Has`, `Engine.Info("edition")`. Each one exists to retire a debt below.
+**Done 18 Nov for XT and xRay** (the planned calls of sections 2 to 5): `Game.FindFile`,
+`Scene.Objects`, `Mesh.Has`, `Entity.SetMesh`, `Entity.Set`, `Entity.Get`, `Camera.SetLook`,
+`Camera.WorldToScreen`, `Engine.Mouse`, `Engine.Has`, `Engine.Info("edition")`, all in
+`livecode/contract_calls.livecodescript`, which xt3d's `tools/make_vibe_xt3d.py` appends to the
+engine both editions run. Each one exists to retire a debt below; the games have not moved yet.
+Still to do: the xt3d bench sets `gV3DEdition` to xRay and `gV3DHas` to what it has; nobody has
+played a game that uses them in a window yet.
 
 | Edition | Must add |
 |---|---|
-| **iGame3D XT** | the ten planned calls. Fix `Entity.SetVelocity`'s fifth parameter or remove it. Give `Particles.Add` a colour instead of an internal name. Sound files for the Game Player (today `Sound.Play` is silent there). |
-| **iGame3D xRay** | the ten planned calls. Its own player with the same properties and the same Escape / menu / background pause / `bStill` / `gV3DTickMS` behaviour. Drawing for: HUD text, particles, the laser beam, the explode and fade-out effects, the looks (`View.UsePreset`), skins in `Mesh.Define`. `Game.OnClick` and `Engine.Mouse` in the view's pixels when raylib owns the window. `Sound.Play` through raylib. |
+| **iGame3D XT** | Fix `Entity.SetVelocity`'s fifth parameter or remove it. Give `Particles.Add` a colour instead of an internal name. Sound files for the Game Player (today `Sound.Play` is silent there). |
+| **iGame3D xRay** | Its own player with the same properties and the same Escape / menu / background pause / `bStill` / `gV3DTickMS` behaviour. Drawing for: HUD text, particles, the laser beam, the explode and fade-out effects, the looks (`View.UsePreset`), skins in `Mesh.Define`. `Game.OnClick` and `Engine.Mouse` in the view's pixels when raylib owns the window. `Sound.Play` through raylib. |
 | **iGame3D Box2DXT** | everything XT has, unchanged for games that do not ask for physics; the `Physics.` group once written; `Engine.Has("physics")` true; the same `Collision.Hit` pairs as XT. |
 | **iGame3D xRayBox** | everything xRay has, plus the same physics part as Box2DXT. |
 
