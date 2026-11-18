@@ -6,9 +6,10 @@ Branch `rename-day`. Counts are from the contract tables and the 76 scripts the 
 
 ## 1. The names
 
-43 of the 62 contract calls are already `Group.Verb` in the right group and keep their names. 19 change:
-16 that have no group, and 3 that sit in the wrong one (they act on one object, so they belong
-where typing `Entity.` finds them).
+38 of the 62 contract calls are already `Group.Verb` in the right group and keep their names. 24 change:
+16 that have no group, 3 that sit in the wrong one (they act on one object, so they belong
+where typing `Entity.` finds them), and the 5 camera calls, which get their own group, `Camera.`
+(owner, 18 Nov: "Camera. needs its own group").
 
 | Old name | New name | Uses | | Old name | New name | Uses |
 |---|---|---|---|---|---|---|
@@ -21,14 +22,26 @@ where typing `Entity.` finds them).
 | `SetObjectVelocity` | `Entity.SetVelocity` | 7 | | `MeshExtrude` | `Mesh.Extrude` | 0 |
 | `GetObjectVelocity` | `Entity.GetVelocity` | 0 | | `MeshGrid` | `Mesh.Grid` | 10 |
 | `Scene.SetBob` | `Entity.SetBob` | 5 | | `Scene.Has` | `Entity.Exists` | 0 |
-| `Scene.SetBounds` | `Entity.SetBounds` | 3 | | | | |
+| `Scene.SetBounds` | `Entity.SetBounds` | 3 | | `Engine.ResetCamera` | `Camera.Reset` | 54 |
+| `Engine.SetCam` | `Camera.SetPosition` (see below) | 22 | | `Engine.ScreenToFloor` | `Camera.ScreenToFloor` | 3 |
+| `Engine.SetLook` (planned) | `Camera.SetLook` | 0 | | `Engine.WorldToScreen` (planned) | `Camera.WorldToScreen` | 0 |
 
-That is 587 places in 54 scripts (377 object calls, 202 mesh makers, 8 Scene moves).
-Parameters, units and meaning do not change: only the word.
+That is 666 places in 54 scripts (377 object calls, 202 mesh makers, 8 Scene moves, 79 camera calls).
+Parameters, units and meaning do not change, only the word, **with one exception:**
 
-**Unchanged** (all 43 others): `Scene.ClearAll` `Scene.Objects`; `Mesh.New` `.AddVertex` `.AddFace`
+**`Camera.SetPosition pX, pY, pZ` puts the camera at x,y,z.** `Engine.SetCam` moves the world, so a
+camera at cx,cy,cz is written `Engine.SetCam -cx, -cy, -cz` today. The new call says what it means:
+`Camera.SetPosition cx, cy, cz` (an empty number still leaves that axis alone). So its alias turns
+the three signs round, and its 22 places are moved by hand and checked one by one, not by the
+word-swapping tool. `Engine.SetCam` keeps working, unchanged, as the old name.
+The two planned calls are simply written under their new names (job 3 adds them as `Camera.SetLook`
+and `Camera.WorldToScreen`); nothing uses the old ones, so they get no alias.
+Later, as planned calls of the new group: `Camera.GetPosition()` and `Camera.GetLook()`, so no game
+has to read `gCameraYaw` / `gCameraPitch`.
+
+**Unchanged** (all 38 others): `Scene.ClearAll` `Scene.Objects`; `Mesh.New` `.AddVertex` `.AddFace`
 `.AddLine` `.Define` `.Get` `.Has` `.Transform` `.Merge`; `Entity.Spawn` `.Kill` `.Count` `.SetMesh`
-`.Set` `.Get`; every `Engine.` `View.` `Game.` `HUD.` `Particles.` `FX.` `Collision.` `Weapon.`
+`.Set` `.Get`; `Engine.Info` `.Has` `.Mouse`; every `View.` `Game.` `HUD.` `Particles.` `FX.` `Collision.` `Weapon.`
 `Sound.` call. Messages (`Game.OnStart` ...), shared values (`gViewLeft` ...) and library prefixes
 (`Bit.` `Map.` ...) are not renamed.
 
@@ -36,10 +49,10 @@ Parameters, units and meaning do not change: only the word.
 
 | Stage | What is true |
 |---|---|
-| **A. Step 2** | The 19 new names are thin aliases: three lines each, passing straight through to the old handler. The engine's own code is not touched, and a game that has not moved loses nothing. |
+| **A. Step 2** | The 22 new names that have an old one in use are thin aliases: three lines each, passing straight through to the old handler. The engine's own code is not touched, and a game that has not moved loses nothing. |
 | **B. Games move** | Both names work. The checker counts old names as a new kind of debt, `old name`, with the new name beside it; it does not fail on them. |
 | **C. The checker says 0 old names** | The switch: the engine source takes the new names, and the old names become the aliases. From here `--strict` fails on an old name in our own games. |
-| **D. After** | The old aliases stay through the first public release and go only on the owner's word. They cost 19 small handlers. Public material teaches only the new names from stage A. |
+| **D. After** | The old aliases stay through the first public release and go only on the owner's word. They cost 22 small handlers. Public material teaches only the new names from stage A. |
 
 Where they live: **one table, three generated files.** The table (old, new) goes into
 `ENGINE_CONTRACT.md` as one more marked table (`<!-- contract:renames -->`). A new tool,
@@ -61,8 +74,8 @@ step 2 with 200 objects a step before any game moves).
 
 ## 3. The order the games move (Opus, after step 2)
 
-A small tool does each move (`tools/rename_day.py GAME`): it changes the 19 words outside
-comments and quoted text, then the game's headless test and the checker run. One commit a game.
+A small tool does each move (`tools/rename_day.py GAME`): it changes the words outside
+comments and quoted text (all but `Engine.SetCam`, which it lists for the hand), then the game's headless test and the checker run. One commit a game.
 
 | Wave | Who | Why this order |
 |---|---|---|
@@ -73,7 +86,9 @@ comments and quoted text, then the game's headless test and the checker run. One
 | 4 | the 9 that also reach into the engine's tables: Hunter, Canyon, Antack, AntackFresh, uDead, Amazing_Couple, Thrmnlra, VectorToss, the editor (Ig3dEditor) | wait for `Entity.Set` / `Entity.Get` / `Entity.SetMesh` (job 3), so each is opened once for names and debts together |
 | never | `demo`, `Simple_Test2` | retired (owner, 17 Nov) |
 
-Job 3's new calls (`Engine.SetLook` ...) are already `Group.Verb`: they need no alias.
+Job 3's new calls are written under their final names from the start (`Camera.SetLook`,
+`Camera.WorldToScreen`, `Entity.Set` ...): they need no alias. The 17 games that write
+`gCameraYaw` / `gCameraPitch` move to `Camera.SetLook` in the same visit as their names (A-96).
 
 ## 4. The suggestion list
 
@@ -99,7 +114,7 @@ Entity.                                   <- what was typed
 | `Entity.Se` | narrows as you type |
 | `position` (no dot) | every call with that word in its name or its meaning, in any group |
 | `SetObjectPosition` or `MeshBox` | the old name, with "now `Entity.SetPosition`" |
-| `.` alone | the groups: Scene Mesh Entity Engine View Game HUD Particles FX Collision Weapon Sound |
+| `.` alone | the groups: Scene Mesh Entity Camera Engine View Game HUD Particles FX Collision Weapon Sound |
 | `Game.On` | the messages; `g` and `b` the shared values |
 
 "Also about an object" is worked out, not written: any call in another group whose first
@@ -139,7 +154,7 @@ Not in step 2: moving any game; the engine source; LIB_DEV, LIB_MENU, LIB_GUI, L
 | # | Question | Default taken |
 |---|---|---|
 | 1 | The three Scene moves (`Scene.SetBob`, `Scene.SetBounds`, `Scene.Has` to `Entity.`): yes? | yes: they act on one object |
-| 2 | Camera calls stay `Engine.ResetCamera`, `Engine.SetCam`, `Engine.SetLook`, or get a `Camera.` group? | stay: `Engine.SetCam` moves the world, not the camera, and a `Camera.SetPosition` would promise the opposite. A real `Camera.` group is its own piece of work |
+| 2 | Camera calls: a `Camera.` group? | **answered, 18 Nov: yes, its own group** (section 1). Still yours to confirm: `Camera.SetPosition` takes the camera's real place (signs turned round from `Engine.SetCam`) |
 | 3 | `Get` in the names (`Entity.GetPosition`), or the short form (`Entity.Position`)? | `Get`: it sorts beside its `Set` in the list |
 | 4 | Old names: kept through the first public release, removed only on your word? | yes |
 | 5 | Which face after the small window: the in-game console (2) or the script editor (4)? | the in-game console |
