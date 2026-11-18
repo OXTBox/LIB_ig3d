@@ -43,6 +43,7 @@ never `C:/Users/...` (`Data.Relative`). Saved levels, harvests and docs then wor
 | `Shaders/` | Shaders | `Shaders/` |
 | `Procedures/` | Parameter sets that generate assets (procedure first) | (new) |
 | `Help/` | Readmes and docs, as text | `Help/` |
+| `Menus/<Game or App>/` | The user's menus of one game or app: one item-list file a menu, callbacks in `Functions/` (`Data.MenuFolder`). They win over LIB_MENU's shipped `Data/Default/<game or app>/Menus/`, file by file | `Scripts/Functions/Menus/`, `Scripts/Default/Menus/` |
 | `Users/<name>/` | Saves, settings, high scores | `Users/` |
 | `Work/Snapshots/` | Screenshots (now `C:\LIB_MCP\*.png`) | |
 | `Work/Logs/` | Error logs, raylib log, bench checks (now `C:\LIB_MCP`, `C:\xt3d`) | |
