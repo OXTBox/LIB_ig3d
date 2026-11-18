@@ -29,6 +29,7 @@ Contract/Entity/Entity.Exists
 Contract/Entity/Entity.SetBob
 Contract/Entity/Entity.SetBounds
 Contract/Entity/Entity.SetMesh
+Contract/Entity/Entity.SetColor
 Contract/Entity/Entity.Set
 Contract/Entity/Entity.Get
 Contract/Entity/Entity.SetPosition

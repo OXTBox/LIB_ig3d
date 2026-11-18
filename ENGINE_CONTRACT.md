@@ -93,8 +93,9 @@ passes it to these calls.
 | `Entity.SetBob pId, pAmp, pRoll, pSpeed` | the object floats: up and down pAmp units around where it is now, rocking pRoll radians, pSpeed radians a step. | yes | yes | same |
 | `Entity.SetBounds pId, pBounds` | keeps a drifting object inside `xmin,xmax,zmin,zmax` (units): it bounces off the edges. | yes | yes | same |
 | `Entity.SetMesh pId, pMesh` | draws the object with another mesh from now on (a hill that shrinks, a door that opens). | yes | yes | same |
+| `Entity.SetColor pId, pColor` | draws the object in another colour from now on (a target that lights up, a hit that flashes, a light that turns green). The colour is written as for `Entity.Spawn`: a name, `#RRGGBB` or `r,g,b`. The mesh, place and everything else stay. | yes | yes | same |
 | `Entity.Set pId, pProp, pValue` | sets a value the engine understands: `hp` (hits it can take from the laser or a default collision), `ttl` (steps until the engine removes it), `radius` (units, for collisions). A game's own facts about an object belong in the game's own variables. | yes | yes | same |
-| `Entity.Get(pId, pProp)` | reads one back (`hp`, `ttl`, `radius`, `mesh`, `group`); empty when the object is gone. | yes | yes | same |
+| `Entity.Get(pId, pProp)` | reads one back (`hp`, `ttl`, `radius`, `mesh`, `group`, `color`); empty when the object is gone. | yes | yes | same |
 | `Entity.SetPosition pId, pX, pY, pZ` | puts it there (units). An empty number is 0. | yes | yes | same; moves the body |
 | `Entity.GetPosition(pId, pAxis)` | `x,y,z`; with pAxis `"x"`, `"y"` or `"z"`, that one number. | yes | yes | same; the body's place |
 | `Entity.SetRotation pId, pRX, pRY, pRZ` | turns it (radians about x, y, z). | yes | yes | same |
@@ -282,7 +283,8 @@ Box2D edition exists to test against. The rules it must follow when written:
 
 **Done 18 Nov for XT and xRay** (the planned calls of sections 2 to 5): `Game.FindFile`,
 `Scene.Objects`, `Mesh.Has`, `Entity.SetMesh`, `Entity.Set`, `Entity.Get`, `Camera.SetLook`,
-`Camera.WorldToScreen`, `Engine.Mouse`, `Engine.Has`, `Engine.Info("edition")`, all in
+`Camera.WorldToScreen`, `Engine.Mouse`, `Engine.Has`, `Engine.Info("edition")` (and on 18 Nov,
+later, `Entity.SetColor`: there are no textures, so colour is how a game marks things), all in
 `livecode/contract_calls.livecodescript`, which xt3d's `tools/make_vibe_xt3d.py` appends to the
 engine both editions run. Each one exists to retire a debt below; the games have not moved yet.
 Still to do: the xt3d bench sets `gV3DEdition` to xRay and `gV3DHas` to what it has; nobody has

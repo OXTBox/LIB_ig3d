@@ -27,8 +27,9 @@ call	Entity	Entity.Exists	Entity.Exists(pId)	yes	yes	Scene.Has	pId	true while th
 call	Entity	Entity.SetBob	Entity.SetBob pId, pAmp, pRoll, pSpeed	no	yes	Scene.SetBob	pId	the object floats: up and down pAmp units around where it is now, rocking pRoll radians, pSpeed radians a step.
 call	Entity	Entity.SetBounds	Entity.SetBounds pId, pBounds	no	yes	Scene.SetBounds	pId	keeps a drifting object inside xmin,xmax,zmin,zmax (units): it bounces off the edges.
 call	Entity	Entity.SetMesh	Entity.SetMesh pId, pMesh	no	yes		pId	draws the object with another mesh from now on (a hill that shrinks, a door that opens).
+call	Entity	Entity.SetColor	Entity.SetColor pId, pColor	no	yes		pId	draws the object in another colour from now on (a target that lights up, a hit that flashes, a light that turns green). The colour is written as for Entity.Spawn: a name, #RRGGBB or r,g,b. The mesh, place and everything else stay.
 call	Entity	Entity.Set	Entity.Set pId, pProp, pValue	no	yes		pId	sets a value the engine understands: hp (hits it can take from the laser or a default collision), ttl (steps until the engine removes it), radius (units, for collisions). A game's own facts about an object belong in the game's own variables.
-call	Entity	Entity.Get	Entity.Get(pId, pProp)	yes	yes		pId	reads one back (hp, ttl, radius, mesh, group); empty when the object is gone.
+call	Entity	Entity.Get	Entity.Get(pId, pProp)	yes	yes		pId	reads one back (hp, ttl, radius, mesh, group, color); empty when the object is gone.
 call	Entity	Entity.SetPosition	Entity.SetPosition pId, pX, pY, pZ	no	yes	SetObjectPosition	pId	puts it there (units). An empty number is 0.
 call	Entity	Entity.GetPosition	Entity.GetPosition(pId, pAxis)	yes	yes	GetObjectPosition	pId	x,y,z; with pAxis "x", "y" or "z", that one number.
 call	Entity	Entity.SetRotation	Entity.SetRotation pId, pRX, pRY, pRZ	no	yes	SetObjectRotation	pId	turns it (radians about x, y, z).
