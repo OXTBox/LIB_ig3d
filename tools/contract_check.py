@@ -7,6 +7,7 @@
     python3 -I LIB_ig3d/tools/contract_check.py --stubs      are the headless stand-ins exactly the contract?
     python3 -I LIB_ig3d/tools/contract_check.py FILE ...     check these scripts only
     options: --contract PATH  --engine PATH (repeatable)  --stubs-file PATH  --strict (exit 1 on any debt)
+             --strict-names (exit 1 on an old name too)  --aliases PATH (the alias file, for --stubs)
              --projects PATH (the folder that holds LIB_GAMES, LIB_EDITOR ...; default: beside LIB_ig3d)
 
 It reads LIB_ig3d/ENGINE_CONTRACT.md (the tables under the `<!-- contract:KIND -->` marks) and
@@ -18,6 +19,7 @@ every game script, and lists what a game uses that is outside the contract:
   global     an engine global that is not one of the contract's shared values
   host       a host word the contract lists as a debt (own windows, the cursor, fixed paths...)
   message    a Game.On... handler the engine never sends
+  oldname    a name from before Rename Day (the contract's renames table); counted apart from the debts
 
 The engine scripts are read only to know which names are the engine's. Names inside quoted
 strings are not seen, except after dispatch / send / call. Its test: test_contract_check.py.
@@ -42,6 +44,7 @@ GAMES = ['LIB_GAMES/Vibecode3D_Games/Vibecode3D_Play_*.livecodescript',
          'LIB_EDITOR/iGame3D_XT/Tools/*.livecodescript',
          'LIB_GAD/GeneticAnomaly/*.livecodescript']
 STUBS = 'LIB_GAMES/tools/engine_stubs.livecodescript'
+ALIASES = 'LIB_ig3d/livecode/contract_aliases.livecodescript'   # written by make_names.py
 
 HANDLER = re.compile(r'^\s*(?:private\s+)?(on|function|command|getProp|setProp)\s+([A-Za-z_][\w.]*)', re.I)
 NAME = re.compile(r'[A-Za-z_][\w.]*')
@@ -50,13 +53,14 @@ QUOTED_CALL = re.compile(r'\b(dispatch|send|call)\s+(?:command\s+|function\s+)?"
 SYSTEM = set('''preopenstack openstack opencard closecard closestack closestackrequest rawkeydown rawkeyup
 keydown keyup arrowkey escapekey escapekeydown mouseup mousedown mousemove mouseenter mouseleave idle
 resizestack suspend resume menupick returnkey enterkey tabkey view distance'''.split())
-KINDS = ('internal', 'missing', 'unknown', 'global', 'host', 'message')
+KINDS = ('internal', 'missing', 'unknown', 'global', 'host', 'message', 'oldname')
 TITLES = {'internal': 'Engine internals a game calls (not contract calls)',
           'missing': 'Contract calls the XT engine does not have yet',
           'unknown': 'Calls nobody defines',
           'global': 'Engine globals a game reads or writes (not shared values)',
           'host': 'Host words the contract lists as debts',
-          'message': 'Game.On... handlers the engine never sends'}
+          'message': 'Game.On... handlers the engine never sends',
+          'oldname': 'Old names (Rename Day): they still work, through an alias, until the game has moved'}
 
 
 def read(path):
@@ -109,11 +113,18 @@ class Contract:
         self.properties = {}
         self.libraries = {}    # lower prefix 'bit.' -> where it lives
         self.host = []         # (regex, pattern text, label)
+        self.renames = {}      # lower old name -> (Old, New, how: 'same' or 'signs')
+        self.rows = []         # every call, message and value row: kind, name, form, meaning, xt, section
+        section = ''
         kind = None
         for line in text.split('\n'):
             m = re.match(r'\s*<!--\s*contract:([a-z-]+)\s*-->', line)
             if m:
                 kind = m.group(1)
+                continue
+            m = re.match(r'#{2,3}\s+(?:\d+[a-z]?\.\s*)?(.*)', line)
+            if m:
+                section = m.group(1).strip()
                 continue
             if kind in (None, 'end') or not line.lstrip().startswith('|'):
                 continue
@@ -128,6 +139,12 @@ class Contract:
             if kind == 'libraries':
                 self.libraries[form.lower()] = cells[1] if len(cells) > 1 else ''
                 continue
+            if kind == 'renames':
+                new = re.search(r'`([^`]+)`', cells[1]) if len(cells) > 1 else None
+                if new and NAME.fullmatch(form) and NAME.fullmatch(new.group(1)):
+                    how = cells[2].split()[0].lower() if len(cells) > 2 and cells[2] else 'same'
+                    self.renames.setdefault(form.lower(), (form, new.group(1), how))
+                continue
             name = NAME.search(re.sub(r'^(put|get)\s+', '', form))
             if not name:
                 continue
@@ -135,6 +152,10 @@ class Contract:
             # a name listed twice (Engine.Info and its planned "edition" key): the first row counts
             {'calls': self.calls, 'messages': self.messages, 'values': self.values,
              'properties': self.properties}.get(kind, {}).setdefault(name.group(0).lower(), entry)
+            if kind in ('calls', 'messages', 'values'):
+                self.rows.append({'kind': kind[:-1], 'name': name.group(0), 'form': form,
+                                  'meaning': cells[1] if len(cells) > 1 else '',
+                                  'xt': entry[1], 'section': section})
 
     def xt_has(self, key):
         return self.calls[key][1].startswith('yes')
@@ -174,6 +195,9 @@ def scan(path, lines, contract, eng_handlers, eng_globals, others):
                 found.append(('global', my_globals[key][0], n))
                 continue
             if key in own:
+                continue
+            if key in contract.renames and key not in contract.calls:
+                found.append(('oldname', '%s (now %s)' % contract.renames[key][:2], n))
                 continue
             if key in contract.calls:
                 if not contract.xt_has(key):
@@ -242,9 +266,12 @@ def lines_text(nums, most=6):
 def report(result, mode='kind'):
     out = []
     g = grouped(result)
-    total = sum(len(names) for names in g.values())
-    dirty = sum(1 for p in result if result[p])
+    total = sum(len(names) for kind, names in g.items() if kind != 'oldname')
+    dirty = sum(1 for p in result if any(k != 'oldname' for k, _, _ in result[p]))
     out.append('%d scripts read, %d with debts; %d different debts' % (len(result), dirty, total))
+    old = [(p, k) for p in result for k, _, _ in result[p] if k == 'oldname']
+    if old:
+        out.append('old names (Rename Day): %d places in %d scripts' % (len(old), len({p for p, _ in old})))
     if mode == 'game':
         for path in result:
             if not result[path]:
@@ -281,7 +308,7 @@ def report(result, mode='kind'):
     return '\n'.join(out)
 
 
-def check_stubs(path, contract):
+def check_stubs(path, contract, aliases_path=None):
     """The stand-ins against the contract. Sections of the stub file are named by lines
     `-- == CONTRACT ==`, `-- == DEBTS ==`, `-- == TEST HOOKS ==`; handlers above any mark count
     as CONTRACT."""
@@ -295,11 +322,20 @@ def check_stubs(path, contract):
         h = HANDLER.match(raw)
         if h:
             where.setdefault(h.group(2).lower(), (h.group(2), section))
+    # Rename Day: a new name counts as having a stand-in when the alias file defines it and the
+    # stand-ins have its old name; the old names are then no strangers in the contract part
+    aliased = handlers_of(strip_code(read(aliases_path))) if aliases_path and os.path.exists(aliases_path) else {}
+    through = []
+    for old, (o, new, how) in contract.renames.items():
+        if new.lower() in aliased and old in where and new.lower() not in where:
+            where[new.lower()] = (new, where[old][1])
+            through.append(new)
     out, bad = [], 0
     have = [c for c in contract.calls if contract.xt_has(c)]
     lacking = sorted(contract.calls[c][0] for c in have if c not in where)
     early = sorted(contract.calls[c][0] for c in contract.calls if not contract.xt_has(c) and c in where)
-    extra = sorted(n for k, (n, s) in where.items() if s == 'contract' and k not in contract.calls)
+    extra = sorted(n for k, (n, s) in where.items() if s == 'contract' and k not in contract.calls
+                   and k not in contract.renames)
     wrong = sorted(n for k, (n, s) in where.items() if s != 'contract' and k in contract.calls and contract.xt_has(k))
     debts = sorted(n for k, (n, s) in where.items() if s == 'debts')
     hooks = sorted(n for k, (n, s) in where.items() if s not in ('contract', 'debts'))
@@ -312,6 +348,8 @@ def check_stubs(path, contract):
         if names:
             bad += len(names)
             out.append('WRONG %s: %s' % (title, ', '.join(names)))
+    if through:
+        out.append('new names reached through the alias file (%d): %s' % (len(through), ', '.join(sorted(through))))
     out.append('debts kept alive for the games that still use them (%d): %s' % (len(debts), ', '.join(debts) or 'none'))
     out.append('test hooks (%d): %s' % (len(hooks), ', '.join(hooks) or 'none'))
     out.append('RESULT: ' + ('the stand-ins are exactly the contract' if bad == 0 else '%d things to fix' % bad))
@@ -328,6 +366,7 @@ def game_paths(patterns=GAMES, root=PROJECTS):
 def main(argv):
     mode, strict, stubs = 'kind', False, False
     contract_path, engines, stubs_file, files, root = CONTRACT, [], None, [], PROJECTS
+    aliases, strict_names = None, False
     it = iter(argv)
     for a in it:
         if a == '--by-game':
@@ -340,6 +379,10 @@ def main(argv):
             stubs = True
         elif a == '--stubs-file':
             stubs, stubs_file = True, next(it)
+        elif a == '--aliases':
+            aliases = next(it)
+        elif a == '--strict-names':
+            strict, strict_names = True, True
         elif a == '--projects':
             root = os.path.abspath(next(it))
         elif a == '--contract':
@@ -356,7 +399,8 @@ def main(argv):
         print('no contract tables found in ' + contract_path)
         return 2
     if stubs:
-        text, bad = check_stubs(stubs_file or os.path.join(root, STUBS), contract)
+        text, bad = check_stubs(stubs_file or os.path.join(root, STUBS), contract,
+                                aliases or os.path.join(root, ALIASES))
         print(text)
         return 1 if bad else 0
     engines = engines or [os.path.join(root, e) for e in ENGINES]
@@ -368,7 +412,9 @@ def main(argv):
     if not has_engine:
         print('WARNING: no engine script found, so engine internals and engine globals cannot be told apart')
     print(report(result, mode))
-    return 1 if strict and any(result.values()) else 0
+    # old names fail only with --strict-names (after the engine itself takes the new names)
+    failing = any(k != 'oldname' or strict_names for found in result.values() for k, _, _ in found)
+    return 1 if strict and failing else 0
 
 
 if __name__ == '__main__':

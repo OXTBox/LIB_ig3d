@@ -1,7 +1,8 @@
 # Rename Day, and the `Entity.` suggestion list
 
 Wednesday, November 18, 2026. One page by Fable 5.2, for the owner to correct. TODO A-98, A-99.
-A plan only (step 1): nothing is renamed and no code is written until the owner says yes.
+Step 1 was this plan; the owner said yes on 18 Nov and **step 2 is built** (section 5 says what exists
+and what was tested). No game has been moved.
 Branch `rename-day`. Counts are from the contract tables and the 76 scripts the checker reads.
 
 ## 1. The names
@@ -118,7 +119,7 @@ Entity.                                   <- what was typed
 | `Game.On` | the messages; `g` and `b` the shared values |
 
 "Also about an object" is worked out, not written: any call in another group whose first
-parameter is `pId`. Enter or a click puts the call with its parameter names where the cursor is.
+parameter is `pId` and whose meaning says "object" (`HUD.Set` has a `pId` too, but it names a line of text). Enter or a click puts the call with its parameter names where the cursor is.
 
 **Where it appears.** One small library does the thinking and draws nothing:
 `LIB_ig3d/livecode/lib_suggest.livecodescript` (`Suggest.Load`, `Suggest.For(pTyped)` gives the
@@ -138,7 +139,24 @@ so the same list can later show in raygui (xRay) and in vector lines (XT, inside
 builds it with plain xTalk controls of the same three names if `Gui.Build` is not ready for it.
 The Message Box is not used: it belongs to the IDE, and a library must not depend on the IDE.
 
-## 5. Step 2, after the owner's yes
+## 5. Step 2: built 18 Nov, after the owner's yes
+
+| Built | Where | Tested |
+|---|---|---|
+| The renames table; the contract's tables now show the new names; the camera has its own section | `ENGINE_CONTRACT.md` sections 4, 5, 16 | read by the checker |
+| `make_names.py`: aliases, words, menu from the contract; `--check` says when one is stale | `tools/make_names.py`, `livecode/contract_aliases.livecodescript`, `Data/contract_words.txt`, `Data/Menus/Contract.txt` | the checker's test (65 of 65), which also fails if the real files are stale |
+| The checker knows both names: `old name` is counted apart from the debts (666 places, 54 scripts); `--strict-names` for the day the engine switches; `--stubs` accepts the alias file | `tools/contract_check.py` | the same test; `--stubs`: exactly the contract |
+| The engine is made with the 22 aliases appended | bridge repo, branch `rename-day`: `tools/make_vibe_xt3d.py`, `testbench/vibe_engine_xt3d.livecodescript` | headless `t45_rename_aliases`: 60 checks on the stand-ins and on the real engine script. Every new name gives what the old one gives; `Camera.SetPosition 100,-160,-520` shows the same floor as `Engine.SetCam -100,160,520`; 5000 calls cost the same through the alias (77 ms and 76 ms) |
+| The list: `Suggest.Load`, `Suggest.For`, `Suggest.Pick`, `Suggest.Meaning` | `livecode/lib_suggest.livecodescript` | headless `t46_suggest`: 37 checks |
+| The small window, "FOR OWNER \| Type Entity. and a space" | `livecode/suggest_window.livecodescript` (open it in OXT-Beyond) | the same test builds it, types and picks through its handlers. **Not tested: how it looks, and real typing and clicking** (no screen in a headless test) |
+
+Not done, and why: the window is plain xTalk controls named `typed`, `words`, `meaning`; no `.gui`
+file was written, because one that nothing has built would be an untested file. The stand-ins
+(`LIB_GAMES/tools/engine_stubs.livecodescript`) were not edited: a test adds the alias file after them.
+Making the engine again also brought in the engine source's variable renames of 15 Nov
+(`tArray` to `tXYZArray` ...; Vibecode3D commit cd5560c), which the last generated copy did not have.
+
+The list below is what was planned:
 
 1. The `renames` table in the contract; `make_names.py`; the three generated files.
 2. The checker learns the table: both names are contract calls; `old name` is a debt kind;

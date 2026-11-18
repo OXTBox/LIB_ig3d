@@ -2,6 +2,7 @@
 
 Monday, November 16, 2026. Draft 1, by Fable 5.2, for the owner to correct.
 Tuesday, November 17, 2026: the owner answered the five questions (section 15); the tables follow his answers.
+Wednesday, November 18, 2026: Rename Day (section 16, `RENAME_DAY.md`): 24 calls take `Group.Verb` names; the tables show the new names.
 Branch `engine-contract` (LIB_ig3d and LIB_GAMES). Checker: `tools/contract_check.py`.
 
 One game script should run on all four editions:
@@ -53,10 +54,7 @@ code, not by running xRay; the Box2D editions do not exist yet.
 | Call | What it does, units, what it gives back | XT | xRay | Box2D editions |
 |---|---|---|---|---|
 | `Scene.ClearAll` | removes every object. Call it first in `Game.OnStart`. | yes | yes | same |
-| `Scene.Has(pId)` | true while the object exists (from `Entity.Spawn` until `Entity.Kill`, an explosion or a kill). | yes | yes | same |
 | `Scene.Objects(pMesh)` | the ids of the living objects, one a line; with a mesh name, only the objects drawn with it. | add | add | add |
-| `Scene.SetBob pId, pAmp, pRoll, pSpeed` | the object floats: up and down pAmp units around where it is now, rocking pRoll radians, pSpeed radians a step. | yes | yes | same |
-| `Scene.SetBounds pId, pBounds` | keeps a drifting object inside `xmin,xmax,zmin,zmax` (units): it bounces off the edges. | yes | yes | same |
 
 ## 3. Meshes
 
@@ -75,14 +73,14 @@ passes it to these calls.
 | `Mesh.Has(pName)` | true when a mesh of that name is defined. | add | add | add |
 | `Mesh.Transform(tMesh, pRX, pRY, pRZ, pTX, pTY, pTZ, pScale)` | a copy turned (radians), scaled (empty = 1), then moved (units). | yes | yes | same |
 | `Mesh.Merge(tA, tB)` | mesh A with mesh B added. | yes | yes | same |
-| `MeshBox(pW, pH, pD)` | a box centred on 0,0,0: width (x), height (y), depth (z) in units. | yes | yes | same |
-| `MeshPrism(pSides, pRadius, pHeight)` | a prism standing on the y axis, centred (6 to 8 sides reads as a cylinder). | yes | yes | same |
-| `MeshPyramid(pSides, pRadius, pHeight)` | a pyramid or cone: base at +height/2 (the bottom), tip at -height/2 (the top). | yes | yes | same |
-| `MeshLathe(pProfile, pSides)` | a profile spun round the y axis. Profile: `radius,y` points from top to bottom, `\|` between points. | yes | yes | same |
-| `MeshSphere(pRadius, pRings, pSides)` | a low-count ball. | yes | yes | same |
-| `MeshLoft(pOutlineA, pYA, pOutlineB, pYB)` | two outlines seen from above (`x,z` points, same count) joined at two heights: hulls, wings. | yes | yes | same |
-| `MeshExtrude(pOutline, pDepth)` | a flat outline (`x,y` points, front view) pushed pDepth units along z, centred: letters, panels. | yes | yes | same |
-| `MeshGrid(pCols, pRows, pSpacing)` | a flat grid on the floor plane, centred; pSpacing units a square. | yes | yes | same |
+| `Mesh.Box(pW, pH, pD)` | a box centred on 0,0,0: width (x), height (y), depth (z) in units. | yes | yes | same |
+| `Mesh.Prism(pSides, pRadius, pHeight)` | a prism standing on the y axis, centred (6 to 8 sides reads as a cylinder). | yes | yes | same |
+| `Mesh.Pyramid(pSides, pRadius, pHeight)` | a pyramid or cone: base at +height/2 (the bottom), tip at -height/2 (the top). | yes | yes | same |
+| `Mesh.Lathe(pProfile, pSides)` | a profile spun round the y axis. Profile: `radius,y` points from top to bottom, `\|` between points. | yes | yes | same |
+| `Mesh.Sphere(pRadius, pRings, pSides)` | a low-count ball. | yes | yes | same |
+| `Mesh.Loft(pOutlineA, pYA, pOutlineB, pYB)` | two outlines seen from above (`x,z` points, same count) joined at two heights: hulls, wings. | yes | yes | same |
+| `Mesh.Extrude(pOutline, pDepth)` | a flat outline (`x,y` points, front view) pushed pDepth units along z, centred: letters, panels. | yes | yes | same |
+| `Mesh.Grid(pCols, pRows, pSpacing)` | a flat grid on the floor plane, centred; pSpacing units a square. | yes | yes | same |
 
 ## 4. Entities (the objects in the scene)
 
@@ -91,30 +89,38 @@ passes it to these calls.
 | `Entity.Spawn(pMesh, pX, pY, pZ, pColor)` | a new object drawn with the named mesh at that place (units), at rest, not turned. Gives back its id. | yes | yes | same; a body too when the game asks (section 11) |
 | `Entity.Kill pId` | removes it at once, no effect. Killing an id that is gone does nothing. | yes | yes | same |
 | `Entity.Count(pMesh)` | how many living objects are drawn with that mesh. | yes | yes | same |
+| `Entity.Exists(pId)` | true while the object exists (from `Entity.Spawn` until `Entity.Kill`, an explosion or a kill). | yes | yes | same |
+| `Entity.SetBob pId, pAmp, pRoll, pSpeed` | the object floats: up and down pAmp units around where it is now, rocking pRoll radians, pSpeed radians a step. | yes | yes | same |
+| `Entity.SetBounds pId, pBounds` | keeps a drifting object inside `xmin,xmax,zmin,zmax` (units): it bounces off the edges. | yes | yes | same |
 | `Entity.SetMesh pId, pMesh` | draws the object with another mesh from now on (a hill that shrinks, a door that opens). | add | add | add |
 | `Entity.Set pId, pProp, pValue` | sets a value the engine understands: `hp` (hits it can take from the laser or a default collision), `ttl` (steps until the engine removes it), `radius` (units, for collisions). A game's own facts about an object belong in the game's own variables. | add | add | add |
 | `Entity.Get(pId, pProp)` | reads one back (`hp`, `ttl`, `radius`, `mesh`, `group`); empty when the object is gone. | add | add | add |
-| `SetObjectPosition pId, pX, pY, pZ` | puts it there (units). An empty number is 0. | yes | yes | same; moves the body |
-| `GetObjectPosition(pId, pAxis)` | `x,y,z`; with pAxis `"x"`, `"y"` or `"z"`, that one number. | yes | yes | same; the body's place |
-| `SetObjectRotation pId, pRX, pRY, pRZ` | turns it (radians about x, y, z). | yes | yes | same |
-| `GetObjectRotation(pId)` | `rx,ry,rz` (0 for any never set). | yes | yes | same |
-| `SetObjectRotationSpeed pId, pRX, pRY, pRZ` | keeps it turning: radians a step. | yes | yes | same |
-| `GetObjectRotationSpeed(pId)` | `rx,ry,rz`. | yes | yes | same |
-| `SetObjectVelocity pId, pVX, pVY, pVZ` | keeps it moving: units a step, in world directions. The engine moves it each step. Give three numbers only (XT's fifth parameter is broken). | yes | yes | same; the body's speed |
-| `GetObjectVelocity(pId)` | `vx,vy,vz`. | yes | yes | same |
+| `Entity.SetPosition pId, pX, pY, pZ` | puts it there (units). An empty number is 0. | yes | yes | same; moves the body |
+| `Entity.GetPosition(pId, pAxis)` | `x,y,z`; with pAxis `"x"`, `"y"` or `"z"`, that one number. | yes | yes | same; the body's place |
+| `Entity.SetRotation pId, pRX, pRY, pRZ` | turns it (radians about x, y, z). | yes | yes | same |
+| `Entity.GetRotation(pId)` | `rx,ry,rz` (0 for any never set). | yes | yes | same |
+| `Entity.SetRotationSpeed pId, pRX, pRY, pRZ` | keeps it turning: radians a step. | yes | yes | same |
+| `Entity.GetRotationSpeed(pId)` | `rx,ry,rz`. | yes | yes | same |
+| `Entity.SetVelocity pId, pVX, pVY, pVZ` | keeps it moving: units a step, in world directions. The engine moves it each step. Give three numbers only (XT's fifth parameter is broken). | yes | yes | same; the body's speed |
+| `Entity.GetVelocity(pId)` | `vx,vy,vz`. | yes | yes | same |
 
-## 5. Camera, the view, and the engine itself
+## 5. The camera
 
 | Call | What it does, units, what it gives back | XT | xRay | Box2D editions |
 |---|---|---|---|---|
-| `Engine.ResetCamera` | a plain camera: at 0,0,0, looking along +Z, no turn, no zoom. Call it in `Game.OnStart`. | yes | yes | same |
-| `Engine.SetCam pX, pY, pZ` | moves the WORLD by x,y,z (units), so a camera standing at cx,cy,cz is `Engine.SetCam -cx, -cy, -cz`. An empty number leaves that axis alone. Turning: `Engine.SetLook` below (the shared values `gCameraYaw`, `gCameraPitch` still work until every game uses it). | yes | yes | same |
-| `Engine.SetLook pYaw, pPitch, pRoll` | turns the camera (radians): yaw left-right (0 looks along +Z, positive turns right), pitch up-down (positive looks up), roll side to side (positive tips the picture clockwise). An empty number leaves that turn alone. Owner's answer to question 2, 17 Nov. | add | add | add |
+| `Camera.Reset` | a plain camera: at 0,0,0, looking along +Z, no turn, no zoom. Call it in `Game.OnStart`. | yes | yes | same |
+| `Camera.SetPosition pX, pY, pZ` | puts the camera at x,y,z (units). An empty number leaves that axis alone. (The old `Engine.SetCam` moved the WORLD, so it took the same numbers with their signs turned round: section 16.) Turning: `Camera.SetLook` below (the shared values `gCameraYaw`, `gCameraPitch` still work until every game uses it). | yes | yes | same |
+| `Camera.SetLook pYaw, pPitch, pRoll` | turns the camera (radians): yaw left-right (0 looks along +Z, positive turns right), pitch up-down (positive looks up), roll side to side (positive tips the picture clockwise). An empty number leaves that turn alone. Owner's answer to question 2, 17 Nov. | add | add | add |
+| `Camera.ScreenToFloor(pX, pY, pFloorY)` | the place on the level floor y = pFloorY (units) under a screen point: `x z` (a space between), or empty when that point looks at the sky. | yes | yes | same |
+| `Camera.WorldToScreen(pX, pY, pZ)` | where a world point shows on the screen: `x,y` in pixels, or empty when it is behind the camera. | add | add | add |
+
+### 5b. The view, and the engine itself
+
+| Call | What it does, units, what it gives back | XT | xRay | Box2D editions |
+|---|---|---|---|---|
 | `Engine.Info(pKey)` | `"stepMS"`: 33. `"simTick"`: steps since the engine started. `"projection"`: `k,offX,offY`: a point x,y,z in front of an unturned camera shows at screen `x*k/z + offX`, `y*k/z + offY`. `"fps"`, `"playing"`, `"paused"`. Any other key: empty. | yes | yes | same |
 | `Engine.Info("edition")` | `XT`, `xRay`, `Box2DXT` or `xRayBox` (the same call as above with a new key; XT answers empty today). | add | add | add |
 | `Engine.Has(pFeature)` | true when this edition has an optional part: `"physics"`, `"sound"`, `"models"`. A game asks before using an optional part and plays on without it. | add | add | add |
-| `Engine.ScreenToFloor(pX, pY, pFloorY)` | the place on the level floor y = pFloorY (units) under a screen point: `x z` (a space between), or empty when that point looks at the sky. | yes | yes | same |
-| `Engine.WorldToScreen(pX, pY, pZ)` | where a world point shows on the screen: `x,y` in pixels, or empty when it is behind the camera. | add | add | add |
 | `Engine.Mouse()` | `x,y,down`: the mouse in the view's pixels, and true while its button is held. Empty when there is no mouse (a test, `gNoMouse`). | add | add | add |
 | `View.UsePreset pName` | the look: `1983`, `Arcade`, `Fast`, `Vectrex` (line colour, glow, far lines fading). | yes | host | same |
 | `View.NextPreset()` | the name of the look after the current one (pass it to `View.UsePreset`). | yes | yes | same |
@@ -168,7 +174,7 @@ Globals a game may declare. "read" means the engine sets it and the game only lo
 | `gViewBottom` | read: its bottom edge. | yes | yes | same |
 | `CenterX` | read: the view's centre, x. | yes | yes | same |
 | `CenterY` | read: the view's centre, y. | yes | yes | same |
-| `gCameraYaw` | read and write: the camera's turn left-right (radians; 0 looks along +Z, positive turns right). Being replaced by `Engine.SetLook` (section 5). | yes | yes | same |
+| `gCameraYaw` | read and write: the camera's turn left-right (radians; 0 looks along +Z, positive turns right). Being replaced by `Camera.SetLook` (section 5). | yes | yes | same |
 | `gCameraPitch` | read and write: its tilt (radians; positive looks up). | yes | yes | same |
 | `bPaused` | read: true while paused (Escape, the menu, the window in the background). | yes | yes | same |
 | `bPlaying` | read: true while the game runs. | yes | yes | same |
@@ -266,20 +272,20 @@ Box2D edition exists to test against. The rules it must follow when written:
    game fakes its own bouncing and falling; that stays as the fallback).
 2. Box2D is flat (two axes). The game says which plane its bodies live in (the floor x,z for a
    top-down game; x,y for a side view), 10 units a metre, y down.
-3. Objects stay `Entity.Spawn` ids. A body is added to an id; `GetObjectPosition` then gives the
-   body's place and `SetObjectPosition` moves it.
+3. Objects stay `Entity.Spawn` ids. A body is added to an id; `Entity.GetPosition` then gives the
+   body's place and `Entity.SetPosition` moves it.
 4. `Collision.SetGroup`, `Collision.AddRule` and `Collision.Hit` keep their meaning: a Box2D
    edition sends the same message for the same touching pairs, so old games do not change.
 
 ## 12. What each edition must add
 
 **All four** (planned calls, section 2 to 5): `Game.FindFile`, `Scene.Objects`, `Mesh.Has`,
-`Entity.SetMesh`, `Entity.Set`, `Entity.Get`, `Engine.WorldToScreen`, `Engine.Mouse`,
+`Entity.SetMesh`, `Entity.Set`, `Entity.Get`, `Camera.WorldToScreen`, `Engine.Mouse`,
 `Engine.Has`, `Engine.Info("edition")`. Each one exists to retire a debt below.
 
 | Edition | Must add |
 |---|---|
-| **iGame3D XT** | the ten planned calls. Fix `SetObjectVelocity`'s fifth parameter or remove it. Give `Particles.Add` a colour instead of an internal name. Sound files for the Game Player (today `Sound.Play` is silent there). |
+| **iGame3D XT** | the ten planned calls. Fix `Entity.SetVelocity`'s fifth parameter or remove it. Give `Particles.Add` a colour instead of an internal name. Sound files for the Game Player (today `Sound.Play` is silent there). |
 | **iGame3D xRay** | the ten planned calls. Its own player with the same properties and the same Escape / menu / background pause / `bStill` / `gV3DTickMS` behaviour. Drawing for: HUD text, particles, the laser beam, the explode and fade-out effects, the looks (`View.UsePreset`), skins in `Mesh.Define`. `Game.OnClick` and `Engine.Mouse` in the view's pixels when raylib owns the window. `Sound.Play` through raylib. |
 | **iGame3D Box2DXT** | everything XT has, unchanged for games that do not ask for physics; the `Physics.` group once written; `Engine.Has("physics")` true; the same `Collision.Hit` pairs as XT. |
 | **iGame3D xRayBox** | everything xRay has, plus the same physics part as Box2DXT. |
@@ -510,3 +516,43 @@ His own words are kept in `LIB_LLMOUT/Read/LIB_ig3d/ENGINE_CONTRACT_ANSWERS.md`.
    guess the next word among thousands. **Decision:** a Rename Day goes on the to-do list
    (`Entity.SetPosition` etc. beside the old names, then the games move over), with the
    `Group.` suggestion list as its companion.
+
+## 16. Rename Day (18 Nov 2026): the old names
+
+The plan and the owner's answers are in `RENAME_DAY.md`. Every call above is written `Group.Verb`.
+The old names below still work **for us only**, while the games move: each is a thin alias made
+from this table (`tools/make_names.py` writes `livecode/contract_aliases.livecodescript`, the
+suggestion list's words and the Contract menu; never edit those three by hand). The checker lists
+every use of an old name. Before the first public release the aliases are deleted.
+
+`same`: the alias passes its parameters straight through. `signs`: the old call took the same
+numbers with their signs turned round (`Engine.SetCam -cx, -cy, -cz` is `Camera.SetPosition cx, cy, cz`).
+`Engine.SetLook` and `Engine.WorldToScreen` were planned and never existed: they are simply written
+`Camera.SetLook` and `Camera.WorldToScreen` above, with no alias.
+
+<!-- contract:renames -->
+| Old name | New name | Alias |
+|---|---|---|
+| `SetObjectPosition` | `Entity.SetPosition` | same |
+| `GetObjectPosition` | `Entity.GetPosition` | same |
+| `SetObjectRotation` | `Entity.SetRotation` | same |
+| `GetObjectRotation` | `Entity.GetRotation` | same |
+| `SetObjectRotationSpeed` | `Entity.SetRotationSpeed` | same |
+| `GetObjectRotationSpeed` | `Entity.GetRotationSpeed` | same |
+| `SetObjectVelocity` | `Entity.SetVelocity` | same |
+| `GetObjectVelocity` | `Entity.GetVelocity` | same |
+| `Scene.Has` | `Entity.Exists` | same |
+| `Scene.SetBob` | `Entity.SetBob` | same |
+| `Scene.SetBounds` | `Entity.SetBounds` | same |
+| `MeshBox` | `Mesh.Box` | same |
+| `MeshPrism` | `Mesh.Prism` | same |
+| `MeshPyramid` | `Mesh.Pyramid` | same |
+| `MeshLathe` | `Mesh.Lathe` | same |
+| `MeshSphere` | `Mesh.Sphere` | same |
+| `MeshLoft` | `Mesh.Loft` | same |
+| `MeshExtrude` | `Mesh.Extrude` | same |
+| `MeshGrid` | `Mesh.Grid` | same |
+| `Engine.ResetCamera` | `Camera.Reset` | same |
+| `Engine.SetCam` | `Camera.SetPosition` | signs |
+| `Engine.ScreenToFloor` | `Camera.ScreenToFloor` | same |
+<!-- contract:end -->

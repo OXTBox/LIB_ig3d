@@ -200,6 +200,84 @@ def main():
         code = cc.main(['--contract', os.path.join(tmp, 'c.md'), '--engine', engine, '--strict', clean])
         check('--strict exits 0 on a clean game', code, 0)
 
+        # Rename Day: the renames table, old names, the alias file, the generated files
+        import make_names as mn
+        renamed = CONTRACT.replace('<!-- contract:values -->', """| `Entity.SetPosition pId, pX, pY, pZ` | puts it there | yes | yes | same |
+| `Mesh.Box(pW, pH, pD)` | a box | yes | yes | same |
+| `Camera.SetPosition pX, pY, pZ` | the camera's place | yes | yes | same |
+| `Camera.SetLook pYaw` | planned | add | add | add |
+<!-- contract:values -->""") + """
+<!-- contract:renames -->
+| Old name | New name | Alias |
+|---|---|---|
+| `SetObjectPosition` | `Entity.SetPosition` | same |
+| `MeshBox` | `Mesh.Box` | same |
+| `Engine.SetCam` | `Camera.SetPosition` | signs |
+| `Engine.SetLook` | `Camera.SetLook` | same |
+<!-- contract:end -->
+"""
+        rc = cc.Contract(renamed)
+        check('reads the renames', sorted(rc.renames), ['engine.setcam', 'engine.setlook', 'meshbox', 'setobjectposition'])
+        check('a rename keeps old, new and how', rc.renames['engine.setcam'], ('Engine.SetCam', 'Camera.SetPosition', 'signs'))
+        check('the rows keep form and meaning', [r['meaning'] for r in rc.rows if r['name'] == 'Mesh.Box'], ['a box'])
+        old_game = put('Vibecode3D_Play_Old.livecodescript', """on Game.OnStart
+   SetObjectPosition "a", 1, 2, 3
+   put MeshBox(1, 2, 3) into tM
+   Entity.SetPosition "a", 1, 2, 3
+end Game.OnStart
+""")
+        result, has_engine = cc.check([old_game], rc, [engine])
+        check('an old name is found, with the new one', [(k, n, l) for k, n, l in result[old_game]],
+              [('oldname', 'SetObjectPosition (now Entity.SetPosition)', 2), ('oldname', 'MeshBox (now Mesh.Box)', 3)])
+        text = cc.report(result, 'kind')
+        check('old names are counted apart from the debts', '0 with debts; 0 different debts' in text
+              and 'old names (Rename Day): 2 places in 1 scripts' in text)
+        rpath = put('r.md', renamed)
+        check('--strict passes over old names', cc.main(['--contract', rpath, '--engine', engine, '--strict', old_game]), 0)
+        check('--strict-names does not', cc.main(['--contract', rpath, '--engine', engine, '--strict-names', old_game]), 1)
+
+        files, problems = mn.build(rc)
+        ali = files['livecode/contract_aliases.livecodescript']
+        check('aliases: nothing wrong in the table', problems, [])
+        check('aliases: a command passes straight through',
+              'on Entity.SetPosition pId, pX, pY, pZ\n   SetObjectPosition pId, pX, pY, pZ\n   return the result\nend Entity.SetPosition' in ali)
+        check('aliases: a function returns the old one', 'function Mesh.Box pW, pH, pD\n   return MeshBox(pW, pH, pD)\nend Mesh.Box' in ali)
+        check('aliases: signs turned round, empty left alone',
+              'if pX is a number then put 0 - pX into pX' in ali and '   Engine.SetCam pX, pY, pZ' in ali)
+        check('aliases: none for a planned call', 'Camera.SetLook' in ali, False)
+        words = files['Data/contract_words.txt']
+        check('words: a call line', 'call\tEntity\tEntity.SetPosition\tEntity.SetPosition pId, pX, pY, pZ\tno\tyes\tSetObjectPosition\tpId\tputs it there' in words)
+        check('words: a function, planned', 'call\tGame\tGame.FindFile\tGame.FindFile(pPath)\tyes\tplanned\t\tpPath\tplanned' in words)
+        check('words: a message and a value', 'message\tGame\tGame.OnStart\t' in words and 'value\tValue\tgCameraYaw\t' in words)
+        check('words: a name listed twice comes once', words.count('\tEngine.Info\t'), 1)
+        check('menu: Head/Sub/Item', 'handler: ContractMenuPick\n' in files['Data/Menus/Contract.txt']
+              and 'Contract/Entity/Entity.SetPosition\n' in files['Data/Menus/Contract.txt'])
+        bad_table = cc.Contract(renamed.replace('| `MeshBox` | `Mesh.Box` | same |', '| `MeshBox` | `Mesh.Cube` | same |'))
+        check('a rename to a name with no row is said', mn.build(bad_table)[1], ['renames: Mesh.Cube has no row in the call tables'])
+
+        # (the old handlers go first: handlers above any mark are in the contract part)
+        stubs_old = put('old.livecodescript', """on SetObjectPosition
+end SetObjectPosition
+function MeshBox
+end MeshBox
+on Engine.SetCam
+end Engine.SetCam
+""" + STUBS_GOOD)
+        text, bad = cc.check_stubs(stubs_old, rc, put('aliases.livecodescript', ali))
+        check('stand-ins with old names + the alias file: nothing to fix', bad, 0)
+        check('...and the new names reached through it are listed', 'through the alias file (3)' in text)
+        text, bad = cc.check_stubs(stubs_old, rc, os.path.join(tmp, 'no_such_file'))
+        check('without the alias file the new names have no stand-in', bad, 3)
+
+        out = os.path.join(tmp, 'out')
+        check('make_names writes', mn.main(['--contract', rpath, '--out', out]), 0)
+        check('make_names --check: fresh', mn.main(['--contract', rpath, '--out', out, '--check']), 0)
+        with open(os.path.join(out, 'Data', 'contract_words.txt'), 'a') as f:
+            f.write('edited by hand\n')
+        check('make_names --check: a hand edit is caught', mn.main(['--contract', rpath, '--out', out, '--check']), 1)
+        # the real files: what is committed is what the real contract says today
+        check('THE REAL FILES are what ENGINE_CONTRACT.md says (else run tools/make_names.py)', mn.main(['--check']), 0)
+
     print('\n%d of %d passed' % (CHECKS[0] - len(FAILS), CHECKS[0]))
     return 1 if FAILS else 0
 
