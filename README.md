@@ -81,3 +81,9 @@ For the owner to decide. "Suggested" is only a suggestion.
 - When something moves out, leave a line in section 3 saying where it went.
 - Public wording: xTalk, from the HyperCard family; iGame3D with a capital D; the lowercase x
   inside a name (xRay), "XT" in capitals when it stands alone.
+
+## Licence
+
+GPL-3.0 (see `LICENSE`), because the xTalk work here is built on the GPL-licensed LiveCode Community 9 engine. Copyright (c) 2026 xAction.
+
+The Python files (`.py`) and other material that is not xTalk are also offered under the MIT licence, Copyright (c) 2026 xAction: you may use them under either licence.
