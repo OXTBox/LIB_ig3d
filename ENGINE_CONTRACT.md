@@ -230,6 +230,7 @@ Not engine calls: ordinary xTalk scripts a game loads itself. The checker lets t
 | `Map.` | `LIB_MAP/livecode/lib_map.livecodescript` |
 | `Input.` | `LIB_INPUT/livecode/lib_input.livecodescript` (actions instead of key codes; the player loads it and polls) |
 | `CellMap.` | `LIB_BIT/editor` (cellmap v2) |
+| `Lean.` | `LIB_BIT/livecode/lib_lean.livecodescript` (the Lean style: a cube level as a clean outline) |
 | `Anims.` | `LIB_MOCAP/livecode/anim_list.livecodescript` |
 | `Seq.` | `LIB_GAMES/Vibecode3D_Games/Sequencer/sequencer.livecodescript` |
 | `Term.` | the same script: the Sequencer's text console |
