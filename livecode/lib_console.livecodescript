@@ -356,7 +356,20 @@ on Con.Run pIn
    Con.Say pIn, "> " & tLine
    put Con.Do(pIn, tLine) into tAnswer
    if tAnswer is not empty then Con.Say pIn, tAnswer
+   Con.Refocus pIn
 end Con.Run
+
+-- the keyboard back to the line, the cursor at its end
+on Con.Refocus pIn
+   local tErr
+   try
+      if exists(pIn) and the visible of pIn then
+         focus on pIn
+         select after char (the number of chars of the text of pIn) of pIn
+      end if
+   catch tErr
+   end try
+end Con.Refocus
 
 -- run one line at the host: a call, a command, or a value to show
 function Con.Do pIn, pLine
@@ -406,14 +419,34 @@ function Con.Do pIn, pLine
       try
          put Con.Exec(pIn, tGlobals, pLine, true) into tAnswer
       catch tErr2
-         return "could not run that:" && Con.Error(tErr)
+         return Con.NotRun(pIn, pLine, tErr)
       end try
+      -- an unknown word comes back as itself ("Scene.ClearAll" with no engine): not an answer
+      if tAnswer is pLine then return Con.NotRun(pIn, pLine, tErr)
       if tAnswer is empty then return "(empty)"
       return tAnswer
    end try
    if word 1 to -1 of tAnswer is empty then return "ok"    -- nothing, or only blank lines
    return tAnswer
 end Con.Do
+
+-- why a line did not run, in words; a contract call that is not found gets the host's hint
+-- (the line's cConHint, e.g. the xt3d bench: "engine calls work while a game plays")
+function Con.NotRun pIn, pLine, pErr
+   local tFirst, tText
+   put Con.Error(pErr) into tText
+   put word 1 of pLine into tFirst
+   if offset("(", tFirst) > 0 then put char 1 to offset("(", tFirst) - 1 of tFirst into tFirst
+   -- 573: can't find handler (OXT-Beyond gives the number alone)
+   if tText contains "handler" or item 1 of line 1 of pErr is 573 then
+      put tFirst && "is not found here" into tText
+      try
+         if Suggest.Meaning(tFirst) is not empty and the cConHint of pIn is not empty then put tText & ":" && the cConHint of pIn into tText
+      catch pErr
+      end try
+   end if
+   return "could not run that:" && tText
+end Con.NotRun
 
 -- at the host (its Con.DoHere), else here
 function Con.Exec pIn, pGlobals, pCode, pIsValue
