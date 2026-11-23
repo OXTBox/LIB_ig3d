@@ -32,6 +32,8 @@ script "LibConsole"
 -- Without one (or no host) the line runs here, where only libraries (the engine) are reachable.
 --
 -- Con.Typing() is true while a console line has the keyboard: a host's camera or game keys wait.
+-- Hosts (22 Nov): iGame3D XT editor (Window > Console), xt3d Games bench (under the view), Game Player
+-- (LIB_DEV game_player: ... > Console or F4). A host's own `on tabKey` asks Con.TabIsMine(game plays?).
 
 local sS        -- sS[long id of the line][...]: "fill" chars autofilled, "hist" lines run, "at" Up/Down,
                 -- "menu" the Tab list, "word" the word it is for, "typed" the text before the cursor
@@ -107,6 +109,26 @@ function Con.Typing
       return false
    end try
 end Con.Typing
+
+-- Tab pressed while the keyboard is NOT in the line (the host's own `on tabKey`, ISSUES 0015: five games
+-- use Tab). True: it is the console's Tab (Con.TabFromHost). False: a game plays, so Tab is the game's
+-- (it reads the keysDown itself, or its card's tabKey came first); the host then does nothing with it:
+-- passing it would let the engine move the keyboard into the line (traversal) and the game would wait.
+function Con.TabIsMine pGamePlays
+   if Con.Typing() then return true
+   return pGamePlays is not true
+end Con.TabIsMine
+
+-- the console's Tab from anywhere in the host: the keyboard to the line, then its menu
+on Con.TabFromHost pIn
+   local tErr
+   try
+      focus on pIn
+      select after char (the number of chars of the text of pIn) of pIn
+   catch tErr
+   end try
+   Con.Tab pIn
+end Con.TabFromHost
 
 -------------------------------------------------------------------- the words
 
